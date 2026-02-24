@@ -8,8 +8,8 @@ providers:
     folder: 'AIObserve Stack'
     folderUid: aiobs-observability
     type: file
-    disableDeletion: false
+    disableDeletion: true
     updateIntervalSeconds: 30
-    allowUiUpdates: true
+    allowUiUpdates: false
     options:
       path: /var/lib/grafana/dashboards

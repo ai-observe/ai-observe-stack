@@ -19,4 +19,4 @@ datasources:
       tlsSkipVerify: true
     secureJsonData:
       password: ""
-    editable: true
+    editable: false

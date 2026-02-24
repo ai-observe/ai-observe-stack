@@ -68,6 +68,9 @@ services:
       - GF_LOG_LEVEL=info
       - GF_FEATURE_TOGGLES_ENABLE=traceQLStreaming metricsSummary
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=doris-app
+      # Anonymous access (read-only)
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
     ports:
       - "3000:3000"
     volumes:

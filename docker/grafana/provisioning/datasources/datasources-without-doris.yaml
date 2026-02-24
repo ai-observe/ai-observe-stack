@@ -20,4 +20,4 @@ datasources:
       tlsSkipVerify: true
     secureJsonData:
       password: ${DORIS_PASSWORD}
-    editable: true
+    editable: false
