@@ -39,6 +39,8 @@ services:
     hostname: otel-collector
     container_name: otel-collector
     command: ["--config=/etc/otelcol/otel-collector-config.yaml"]
+    environment:
+      - DORIS_TIMEZONE=${DORIS_TIMEZONE:-UTC}
     volumes:
       - ./otel-collector-config/otel-collector-config.yaml:/etc/otelcol/otel-collector-config.yaml:ro
     ports:
