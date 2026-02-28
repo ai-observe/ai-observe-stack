@@ -73,6 +73,7 @@ services:
       # Anonymous access (read-only)
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_USERS_HOME_PAGE=/a/doris-app/discover
     ports:
       - "3000:3000"
     volumes:

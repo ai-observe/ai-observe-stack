@@ -60,6 +60,7 @@ services:
       # Anonymous access (read-only)
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_USERS_HOME_PAGE=/a/doris-app/discover
       # Doris connection for datasource provisioning
       - DORIS_FE_MYSQL_ENDPOINT=${DORIS_FE_MYSQL_ENDPOINT:-host.docker.internal:9030}
       - DORIS_USERNAME=${DORIS_USERNAME:-root}
