@@ -644,7 +644,7 @@ const INIT_DEMO_DATA = {
     datasource: 'otel',
     logTable: 'otel_logs',
     tracesTable: 'otel_traces',
-    dsUid: 'ffeef8f5kln28f'
+    dsUid: 'doris'
 };
 const FIELD_TYPES = [
     {
@@ -1530,4 +1530,4 @@ function getIndexesService({ selectdbDS, database, table }) {
 /***/ })
 
 }]);
-//# sourceMappingURL=815.js.map?_cache=857e4a00a7cd988ebfa9
+//# sourceMappingURL=815.js.map?_cache=998557ce6fe4368fd4ed

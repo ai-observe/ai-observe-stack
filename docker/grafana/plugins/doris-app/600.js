@@ -682,6 +682,35 @@ var metaservice = __webpack_require__(8161);
 var data_ = __webpack_require__(7781);
 ;// ./components/traces/traces-header/index.tsx
 'use client';
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+    try {
+        var info = gen[key](arg);
+        var value = info.value;
+    } catch (error) {
+        reject(error);
+        return;
+    }
+    if (info.done) {
+        resolve(value);
+    } else {
+        Promise.resolve(value).then(_next, _throw);
+    }
+}
+function _async_to_generator(fn) {
+    return function() {
+        var self = this, args = arguments;
+        return new Promise(function(resolve, reject) {
+            var gen = fn.apply(self, args);
+            function _next(value) {
+                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+            }
+            function _throw(err) {
+                asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+            }
+            _next(undefined);
+        });
+    };
+}
 function _define_property(obj, key, value) {
     if (key in obj) {
         Object.defineProperty(obj, key, {
@@ -767,6 +796,7 @@ function TracesHeader() {
     const [tables, setTables] = (0,react/* useAtom */.fp)(discover/* tablesAtom */.b9);
     const [_datasources, setDataSource] = (0,react/* useAtom */.fp)(discover/* datasourcesAtom */.ui);
     const setDisabledOptions = (0,react/* useSetAtom */.Xr)(discover/* disabledOptionsAtom */.IH);
+    const [initDataSource, setInitDataSource] = (0,react/* useAtom */.fp)(discover/* initDS */.cw);
     const selectdbDS = (0,react/* useAtomValue */.md)(discover/* selectedDatasourceAtom */.SW);
     (0,external_react_.useEffect)(()=>{
         const datasources = (0,runtime_.getDataSourceSrv)().getList();
@@ -890,6 +920,53 @@ function TracesHeader() {
             }
         });
     }
+    function initHeaderData() {
+        return _async_to_generator(function*() {
+            const ds = yield (0,runtime_.getDataSourceSrv)().get({
+                uid: utils_data/* INIT_DEMO_DATA */.I$.dsUid
+            });
+            setInitDataSource(ds);
+            setSelectedDatasource(ds);
+        })();
+    }
+    (0,external_react_.useEffect)(()=>{
+        if (initDataSource) {
+            (0,metaservice/* getTablesService */.Rw)({
+                selectdbDS: initDataSource,
+                database: utils_data/* INIT_DEMO_DATA */.I$.datasource
+            }).subscribe({
+                next: (resp)=>{
+                    const { data, ok } = resp;
+                    if (ok) {
+                        const frame = (0,data_.toDataFrame)(data.results.getTables.frames[0]);
+                        const values = Array.from(frame.fields[0].values);
+                        const options = values.map((item)=>({
+                                label: item,
+                                value: item
+                            }));
+                        setTables(options);
+                        setCurrentTable(utils_data/* INIT_DEMO_DATA */.I$.tracesTable);
+                        setDiscoverCurrent(_object_spread_props(_object_spread({}, discoverCurrent), {
+                            database: utils_data/* INIT_DEMO_DATA */.I$.datasource,
+                            table: utils_data/* INIT_DEMO_DATA */.I$.tracesTable
+                        }));
+                        getFields({
+                            value: utils_data/* INIT_DEMO_DATA */.I$.tracesTable
+                        });
+                        getIndexes({
+                            value: utils_data/* INIT_DEMO_DATA */.I$.tracesTable
+                        });
+                    }
+                },
+                error: (err)=>console.log('Fetch Error', err)
+            });
+        }
+    }, [
+        initDataSource
+    ]);
+    (0,external_react_.useEffect)(()=>{
+        initHeaderData();
+    }, []);
     return /*#__PURE__*/ external_react_default().createElement("div", {
         className: (0,css_.css)`
                 padding: 1rem;
@@ -1363,4 +1440,4 @@ function PageTrace() {
 /***/ })
 
 }]);
-//# sourceMappingURL=600.js.map?_cache=ac24fd3c8fd2cf60b5c8
+//# sourceMappingURL=600.js.map?_cache=d4eee3a1f2ffbc61b638
