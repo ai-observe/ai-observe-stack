@@ -39,7 +39,7 @@ AIObserve Stack 使用 Apache Doris 作为统一的存储后端。Doris 兼容 M
 
 ## 导入预置 Dashboard
 
-我们提供了 4 个 [预置 Dashboard](https://github.com/velodb/ai-observe-stack/tree/master/grafana-dashboard)，覆盖常见的可观测场景：
+我们提供了 4 个 [预置 Dashboard](https://github.com/ai-observe/ai-observe-stack/tree/master/grafana-dashboard)，覆盖常见的可观测场景：
 
 | Dashboard | 文件名 | 监控内容 |
 |---|---|---|

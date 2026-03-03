@@ -16,7 +16,7 @@ keywords:
   - metrics
   - logs
 
-home: https://github.com/velodb/ai-observe-stack.git
+home: https://github.com/ai-observe/ai-observe-stack.git
 icon: https://charts.velodb.io/images/doris.jpg
 
 maintainers:

@@ -26,7 +26,7 @@ Best for local testing, development, and proof of concepts (PoC).
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/velodb/ai-observe-stack.git
+   git clone https://github.com/ai-observe/ai-observe-stack.git
    cd ai-observe-stack/docker
    ```
 

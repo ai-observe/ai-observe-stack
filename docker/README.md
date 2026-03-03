@@ -73,7 +73,7 @@ These ports support integration with various telemetry data sources, enabling th
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/velodb/ai-observe-stack.git
+git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/docker
 ```
 

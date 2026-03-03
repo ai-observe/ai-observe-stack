@@ -73,7 +73,7 @@ Docker Compose 基于默认 OTel Collector 配置暴露以下端口：
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/velodb/ai-observe-stack.git
+git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/docker
 ```
 

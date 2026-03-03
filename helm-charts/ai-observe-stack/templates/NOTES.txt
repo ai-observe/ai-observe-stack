@@ -99,7 +99,7 @@ DOCUMENTATION
 =============================================================================
 
 For more information, visit:
-- AIObserve Stack: https://github.com/velodb/ai-observe-stack
+- AIObserve Stack: https://github.com/ai-observe/ai-observe-stack
 - Apache Doris: https://doris.apache.org
 - OpenTelemetry: https://opentelemetry.io
 - Grafana: https://grafana.com
