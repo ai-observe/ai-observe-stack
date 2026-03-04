@@ -80,6 +80,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning/datasources/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/provisioning/plugins:/etc/grafana/provisioning/plugins:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - ./grafana/plugins/doris-app:/var/lib/grafana/plugins/doris-app:ro
     depends_on:
