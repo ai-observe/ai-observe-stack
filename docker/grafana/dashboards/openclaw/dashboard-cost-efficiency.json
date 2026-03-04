@@ -1,0 +1,476 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    { "asDropdown": true, "icon": "external link", "includeVars": true, "keepTime": true, "tags": ["openclaw"], "targetBlank": false, "title": "OpenClaw Dashboards", "type": "dashboards" }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT count(*) as `Sessions` FROM otel.otel_logs WHERE log_attributes['type'] = 'session' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Sessions",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "green", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT count(*) as `User Messages` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['type'] = 'message' AND log_attributes['message']['role'] = 'user' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "User Messages",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "purple", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT count(*) as `AI Turns` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['type'] = 'message' AND log_attributes['message']['role'] = 'assistant' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "AI Turns",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "orange", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT SUM(CAST(log_attributes['message']['usage']['input'] AS BIGINT)) as `Input Tokens` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['message']['role'] = 'assistant' AND log_attributes['message']['usage']['input'] IS NOT NULL AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Total Input Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "yellow", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "yellow", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT SUM(CAST(log_attributes['message']['usage']['output'] AS BIGINT)) as `Output Tokens` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['message']['role'] = 'assistant' AND log_attributes['message']['usage']['input'] IS NOT NULL AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Total Output Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "red", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 6,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT count(*) as `Tool Calls` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['type'] = 'message' AND log_attributes['message']['role'] = 'toolResult' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Tool Calls",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Token Usage Trend",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Tokens",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "normal" }
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 15, "x": 0, "y": 6 },
+      "id": 7,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "time_series",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  CONCAT(CAST(log_attributes['message']['model'] AS TEXT), ' (input)') as metric,\n  SUM(CAST(log_attributes['message']['usage']['input'] AS BIGINT)) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'assistant'\n  AND log_attributes['message']['usage']['input'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nGROUP BY 1, CAST(log_attributes['message']['model'] AS TEXT)\nORDER BY 1",
+        "refId": "A"
+      },
+      {
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "time_series",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  CONCAT(CAST(log_attributes['message']['model'] AS TEXT), ' (output)') as metric,\n  SUM(CAST(log_attributes['message']['usage']['output'] AS BIGINT)) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'assistant'\n  AND log_attributes['message']['usage']['input'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nGROUP BY 1, CAST(log_attributes['message']['model'] AS TEXT)\nORDER BY 1",
+        "refId": "B"
+      }],
+      "title": "Token Usage Over Time (by Model)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 9, "x": 15, "y": 6 },
+      "id": 8,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["sum"], "fields": "/^value$/", "values": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  CAST(log_attributes['message']['model'] AS TEXT) as model,\n  SUM(CAST(log_attributes['message']['usage']['input'] AS BIGINT)) + SUM(CAST(log_attributes['message']['usage']['output'] AS BIGINT)) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'assistant'\n  AND log_attributes['message']['usage']['input'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nGROUP BY CAST(log_attributes['message']['model'] AS TEXT)\nORDER BY value DESC",
+        "refId": "A"
+      }],
+      "title": "Token Distribution by Model",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 102,
+      "title": "Model Efficiency",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "input_tokens" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-YlRd" } }] },
+          { "matcher": { "id": "byName", "options": "output_tokens" }, "properties": [{ "id": "unit", "value": "short" }] },
+          { "matcher": { "id": "byName", "options": "avg_input_per_turn" }, "properties": [{ "id": "unit", "value": "short" }] },
+          { "matcher": { "id": "byName", "options": "avg_output_per_turn" }, "properties": [{ "id": "unit", "value": "short" }] }
+        ]
+      },
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 16 },
+      "id": 9,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "input_tokens" }], "footer": { "show": true, "reducer": ["sum"], "fields": ["input_tokens", "output_tokens"] } },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  CAST(log_attributes['message']['model'] AS TEXT) as model,\n  CAST(log_attributes['message']['provider'] AS TEXT) as provider,\n  count(*) as turns,\n  SUM(CAST(log_attributes['message']['usage']['input'] AS BIGINT)) as input_tokens,\n  SUM(CAST(log_attributes['message']['usage']['output'] AS BIGINT)) as output_tokens,\n  ROUND(SUM(CAST(log_attributes['message']['usage']['input'] AS BIGINT)) / count(*)) as avg_input_per_turn,\n  ROUND(SUM(CAST(log_attributes['message']['usage']['output'] AS BIGINT)) / count(*)) as avg_output_per_turn\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'assistant'\n  AND log_attributes['message']['usage']['input'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nGROUP BY CAST(log_attributes['message']['model'] AS TEXT), CAST(log_attributes['message']['provider'] AS TEXT)\nORDER BY input_tokens DESC",
+        "refId": "A"
+      }],
+      "title": "Model Efficiency Comparison",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 103,
+      "title": "Session Cost Ranking",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "input_tokens" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-reds" } }] },
+          { "matcher": { "id": "byName", "options": "output_tokens" }, "properties": [{ "id": "unit", "value": "short" }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 23 },
+      "id": 10,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "input_tokens" }], "footer": { "show": true, "reducer": ["sum"], "fields": ["input_tokens", "output_tokens", "ai_turns", "user_msgs"] } },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  REPLACE(CAST(log_attributes['log']['file']['name'] AS TEXT), '.jsonl', '') as session_id,\n  MIN(timestamp) as first_message,\n  MAX(timestamp) as last_message,\n  SUM(CASE WHEN log_attributes['message']['role'] = 'user' THEN 1 ELSE 0 END) as user_msgs,\n  SUM(CASE WHEN log_attributes['message']['role'] = 'assistant' THEN 1 ELSE 0 END) as ai_turns,\n  SUM(CASE WHEN log_attributes['message']['role'] = 'toolResult' THEN 1 ELSE 0 END) as tool_calls,\n  SUM(CAST(log_attributes['message']['usage']['input'] AS BIGINT)) as input_tokens,\n  SUM(CAST(log_attributes['message']['usage']['output'] AS BIGINT)) as output_tokens\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['type'] = 'message'\n  AND $__timeFilter(timestamp)\nGROUP BY CAST(log_attributes['log']['file']['name'] AS TEXT)\nORDER BY input_tokens DESC",
+        "refId": "A"
+      }],
+      "title": "Session Cost Ranking",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 31 },
+      "id": 104,
+      "title": "Context Window Growth (Input Token Snowball)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "description": "Shows how input tokens grow with each AI turn within a session. A steep upward curve indicates context window snowballing — each turn carries the full conversation history, causing exponential cost growth.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Input Tokens",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": false
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 32 },
+      "id": 11,
+      "options": {
+        "legend": { "calcs": ["max", "last"], "displayMode": "table", "placement": "right" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "time_series",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  timestamp as time,\n  REPLACE(CAST(log_attributes['log']['file']['name'] AS TEXT), '.jsonl', '') as metric,\n  CAST(log_attributes['message']['usage']['input'] AS BIGINT) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'assistant'\n  AND log_attributes['message']['usage']['input'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nORDER BY timestamp",
+        "refId": "A"
+      }],
+      "title": "Input Tokens per Turn (Context Window Growth)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
+      "id": 105,
+      "title": "Conversation Token Detail",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "description": "Shows every conversation turn with its token cost. User messages (green) start a new conversation topic. Subsequent assistant turns show how input tokens grow as context accumulates. Use the session_id filter to drill into a specific session.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": true, "filterable": true },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "msg_role" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "mappings", "value": [{ "type": "value", "options": { "user": { "color": "green", "text": "user" }, "assistant": { "color": "blue", "text": "assistant" } } }] }, { "id": "custom.width", "value": 80 }] },
+          { "matcher": { "id": "byName", "options": "input_tokens" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-reds" } }] },
+          { "matcher": { "id": "byName", "options": "output_tokens" }, "properties": [{ "id": "unit", "value": "short" }] },
+          { "matcher": { "id": "byName", "options": "content" }, "properties": [{ "id": "custom.width", "value": 500 }] },
+          { "matcher": { "id": "byName", "options": "session_id" }, "properties": [{ "id": "custom.width", "value": 80 }] }
+        ]
+      },
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 42 },
+      "id": 12,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "time" }] },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CAST(log_attributes['message']['role'] AS TEXT) as msg_role,\n  CAST(log_attributes['message']['model'] AS TEXT) as model,\n  CAST(log_attributes['message']['usage']['input'] AS BIGINT) as input_tokens,\n  CAST(log_attributes['message']['usage']['output'] AS BIGINT) as output_tokens,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 300) as content\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['type'] = 'message'\n  AND log_attributes['message']['role'] IN ('user', 'assistant')\n  AND $__timeFilter(timestamp)\nORDER BY timestamp DESC\nLIMIT 500",
+        "refId": "A"
+      }],
+      "title": "Conversation Token Detail (per turn)",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 56 },
+      "id": 106,
+      "title": "Per-Question Cost (Round Trip)",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "description": "Aggregates token cost per user question. Each row = one user question and all the AI steps it triggered. 'ai_steps' shows how many LLM calls were made for this single question. High total_input with many steps indicates complex tool-use chains (browser, search, etc).",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": true, "filterable": true },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "total_input" }, "properties": [{ "id": "unit", "value": "short" }, { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-reds" } }] },
+          { "matcher": { "id": "byName", "options": "total_output" }, "properties": [{ "id": "unit", "value": "short" }] },
+          { "matcher": { "id": "byName", "options": "ai_steps" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-blues" } }] },
+          { "matcher": { "id": "byName", "options": "user_question" }, "properties": [{ "id": "custom.width", "value": 500 }] },
+          { "matcher": { "id": "byName", "options": "session_id" }, "properties": [{ "id": "custom.width", "value": 80 }] }
+        ]
+      },
+      "gridPos": { "h": 14, "w": 24, "x": 0, "y": 57 },
+      "id": 13,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "total_input" }] },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  t.session_id,\n  t.start_time,\n  t.ai_steps,\n  t.total_input,\n  t.total_output,\n  LEFT(u.content, 200) as user_question\nFROM (\n  SELECT\n    session_id,\n    round_id,\n    MIN(time) as start_time,\n    SUM(CASE WHEN msg_role = 'assistant' THEN 1 ELSE 0 END) as ai_steps,\n    SUM(input_tokens) as total_input,\n    SUM(output_tokens) as total_output\n  FROM (\n    SELECT\n      timestamp as time,\n      LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n      CAST(log_attributes['message']['role'] AS TEXT) as msg_role,\n      CAST(log_attributes['message']['usage']['input'] AS BIGINT) as input_tokens,\n      CAST(log_attributes['message']['usage']['output'] AS BIGINT) as output_tokens,\n      SUM(CASE WHEN log_attributes['message']['role'] = 'user' THEN 1 ELSE 0 END)\n        OVER (PARTITION BY CAST(log_attributes['log']['file']['name'] AS TEXT) ORDER BY timestamp) as round_id\n    FROM otel.otel_logs\n    WHERE log_attributes['log']['source'] = 'session'\n      AND log_attributes['type'] = 'message'\n      AND log_attributes['message']['role'] IN ('user', 'assistant')\n      AND $__timeFilter(timestamp)\n  ) sub\n  GROUP BY session_id, round_id\n) t\nLEFT JOIN (\n  SELECT\n    LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n    SUM(CASE WHEN log_attributes['message']['role'] = 'user' THEN 1 ELSE 0 END)\n      OVER (PARTITION BY CAST(log_attributes['log']['file']['name'] AS TEXT) ORDER BY timestamp) as round_id,\n    CAST(log_attributes['message']['content'] AS TEXT) as content\n  FROM otel.otel_logs\n  WHERE log_attributes['log']['source'] = 'session'\n    AND log_attributes['type'] = 'message'\n    AND log_attributes['message']['role'] = 'user'\n    AND $__timeFilter(timestamp)\n) u ON t.session_id = u.session_id AND t.round_id = u.round_id\nORDER BY t.total_input DESC\nLIMIT 100",
+        "refId": "A"
+      }],
+      "title": "Per-Question Cost (Round Trip)",
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["openclaw", "ai-observability", "cost"],
+  "templating": {
+    "list": [{
+      "current": { "selected": false, "text": "Doris", "value": "doris" },
+      "hide": 0,
+      "includeAll": false,
+      "label": "Datasource",
+      "multi": false,
+      "name": "DS_DORIS",
+      "options": [],
+      "query": "mysql",
+      "refresh": 1,
+      "regex": "",
+      "skipUrlSync": false,
+      "type": "datasource"
+    }]
+  },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "OpenClaw - Cost & Efficiency",
+  "uid": "openclaw-cost",
+  "version": 1
+}

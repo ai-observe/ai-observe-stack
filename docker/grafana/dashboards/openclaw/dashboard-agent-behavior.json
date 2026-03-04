@@ -1,0 +1,366 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    { "asDropdown": true, "icon": "external link", "includeVars": true, "keepTime": true, "tags": ["openclaw"], "targetBlank": false, "title": "OpenClaw Dashboards", "type": "dashboards" }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT ROUND(AVG(duration) / 1000000, 1) as `Avg Request Latency` FROM otel.otel_traces WHERE resource_attributes['service.name'] = 'openclaw' AND span_name = 'openclaw.request' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Avg Request Latency",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "green", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT ROUND(AVG(duration) / 1000000, 1) as `Avg Turn Duration` FROM otel.otel_traces WHERE resource_attributes['service.name'] = 'openclaw' AND span_name = 'openclaw.agent.turn' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Avg Turn Duration",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "purple", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT count(*) as `Total Spans` FROM otel.otel_traces WHERE resource_attributes['service.name'] = 'openclaw' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Total Spans",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "orange", "mode": "fixed" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "orange", "value": null }] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT count(DISTINCT trace_id) as `Trace Chains` FROM otel.otel_traces WHERE resource_attributes['service.name'] = 'openclaw' AND $__timeFilter(timestamp)",
+        "refId": "A"
+      }],
+      "title": "Trace Chains",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 101,
+      "title": "Latency",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "Duration (ms)",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "scheme",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 6 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "time_series",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  timestamp as time,\n  span_name as metric,\n  ROUND(duration / 1000000, 1) as value\nFROM otel.otel_traces\nWHERE resource_attributes['service.name'] = 'openclaw'\n  AND span_name IN ('openclaw.request', 'openclaw.agent.turn')\n  AND $__timeFilter(timestamp)\nORDER BY timestamp",
+        "refId": "A"
+      }],
+      "title": "Request & Turn Latency Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 6 },
+      "id": 6,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["sum"], "fields": "/^value$/", "values": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "transformations": [{
+        "id": "renameByRegex",
+        "options": { "regex": "^span_name$", "renamePattern": "Span Name" }
+      }],
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  span_name as metric,\n  count(*) as value\nFROM otel.otel_traces\nWHERE resource_attributes['service.name'] = 'openclaw'\n  AND $__timeFilter(timestamp)\nGROUP BY span_name\nORDER BY value DESC",
+        "refId": "A"
+      }],
+      "title": "Span Distribution",
+      "type": "piechart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "id": 102,
+      "title": "Tool Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "Calls",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "stacking": { "group": "A", "mode": "normal" }
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 16 },
+      "id": 7,
+      "options": {
+        "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom" },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "time_series",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as metric,\n  count(*) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND log_attributes['message']['toolName'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nGROUP BY 1, CAST(log_attributes['message']['toolName'] AS TEXT)\nORDER BY 1",
+        "refId": "A"
+      }],
+      "title": "Tool Calls Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "calls" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-blues" } }] },
+          { "matcher": { "id": "byName", "options": "errors" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-reds" } }] }
+        ]
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 16 },
+      "id": 8,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "calls" }] },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  CAST(log_attributes['message']['toolName'] AS TEXT) as tool,\n  count(*) as calls,\n  SUM(CASE WHEN CAST(log_attributes['message']['isError'] AS TEXT) IN ('1', 'true') THEN 1 ELSE 0 END) as errors,\n  ROUND(SUM(CASE WHEN CAST(log_attributes['message']['isError'] AS TEXT) IN ('1', 'true') THEN 1 ELSE 0 END) * 100.0 / count(*), 1) as error_rate_pct\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND log_attributes['message']['toolName'] IS NOT NULL\n  AND $__timeFilter(timestamp)\nGROUP BY CAST(log_attributes['message']['toolName'] AS TEXT)\nORDER BY calls DESC",
+        "refId": "A"
+      }],
+      "title": "Tool Call Summary",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "id": 103,
+      "title": "Span Details",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "avg_ms" }, "properties": [{ "id": "unit", "value": "ms" }, { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } }, { "id": "color", "value": { "mode": "continuous-YlRd" } }] },
+          { "matcher": { "id": "byName", "options": "max_ms" }, "properties": [{ "id": "unit", "value": "ms" }] },
+          { "matcher": { "id": "byName", "options": "p95_ms" }, "properties": [{ "id": "unit", "value": "ms" }] }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 26 },
+      "id": 9,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "count" }] },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  span_name,\n  count(*) as count,\n  ROUND(AVG(duration) / 1000000, 1) as avg_ms,\n  ROUND(MAX(duration) / 1000000, 1) as max_ms,\n  ROUND(MIN(duration) / 1000000, 1) as min_ms,\n  ROUND(PERCENTILE_APPROX(duration, 0.95) / 1000000, 1) as p95_ms\nFROM otel.otel_traces\nWHERE resource_attributes['service.name'] = 'openclaw'\n  AND $__timeFilter(timestamp)\nGROUP BY span_name\nORDER BY count DESC",
+        "refId": "A"
+      }],
+      "title": "Span Performance Summary",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 34 },
+      "id": 104,
+      "title": "Conversation Flow",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+      "description": "Shows the interleaving of user messages, AI responses, and tool calls within each session. Useful for understanding conversation patterns and identifying retries.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": true, "filterable": true },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "msg_role" }, "properties": [{ "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "mappings", "value": [{ "type": "value", "options": { "user": { "color": "green", "text": "user" }, "assistant": { "color": "blue", "text": "assistant" }, "toolResult": { "color": "orange", "text": "toolResult" } } }] }] },
+          { "matcher": { "id": "byName", "options": "content" }, "properties": [{ "id": "custom.width", "value": 600 }] }
+        ]
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 35 },
+      "id": 10,
+      "options": { "showHeader": true, "sortBy": [{ "desc": true, "displayName": "time" }] },
+      "targets": [{
+        "datasource": { "type": "mysql", "uid": "${DS_DORIS}" },
+        "editorMode": "code",
+        "format": "table",
+        "rawQuery": true,
+        "rawSql": "SELECT\n  timestamp as time,\n  REPLACE(CAST(log_attributes['log']['file']['name'] AS TEXT), '.jsonl', '') as session_id,\n  CAST(log_attributes['message']['role'] AS TEXT) as msg_role,\n  CAST(log_attributes['message']['model'] AS TEXT) as model,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as tool,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 500) as content\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['type'] = 'message'\n  AND $__timeFilter(timestamp)\nORDER BY timestamp DESC\nLIMIT 200",
+        "refId": "A"
+      }],
+      "title": "Conversation Flow (Recent 200 Messages)",
+      "type": "table"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["openclaw", "ai-observability", "behavior"],
+  "templating": {
+    "list": [{
+      "current": { "selected": false, "text": "Doris", "value": "doris" },
+      "hide": 0,
+      "includeAll": false,
+      "label": "Datasource",
+      "multi": false,
+      "name": "DS_DORIS",
+      "options": [],
+      "query": "mysql",
+      "refresh": 1,
+      "regex": "",
+      "skipUrlSync": false,
+      "type": "datasource"
+    }]
+  },
+  "time": { "from": "now-7d", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "OpenClaw - Agent Behavior",
+  "uid": "openclaw-behavior",
+  "version": 1
+}

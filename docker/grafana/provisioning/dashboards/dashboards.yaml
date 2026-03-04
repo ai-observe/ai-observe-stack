@@ -5,11 +5,32 @@ apiVersion: 1
 providers:
   - name: 'AIObserve Stack Dashboards'
     orgId: 1
-    folder: 'AIObserve Stack'
-    folderUid: aiobs-observability
+    folder: ''
     type: file
     disableDeletion: true
     updateIntervalSeconds: 30
     allowUiUpdates: false
     options:
-      path: /var/lib/grafana/dashboards
+      path: /var/lib/grafana/dashboards/default
+
+  - name: 'OpenClaw Observability Dashboards'
+    orgId: 1
+    folder: 'OpenClaw Observability'
+    folderUid: openclaw-observability
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards/openclaw
+
+  - name: 'Others Dashboards'
+    orgId: 1
+    folder: 'Others'
+    folderUid: others
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards/others

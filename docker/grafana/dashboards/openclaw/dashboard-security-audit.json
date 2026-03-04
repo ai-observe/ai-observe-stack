@@ -1,0 +1,1662 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [
+        "openclaw"
+      ],
+      "targetBlank": false,
+      "title": "OpenClaw Dashboards",
+      "type": "dashboards"
+    }
+  ],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "title": "Risk Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_DORIS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) as `Dangerous Commands` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['message']['role'] = 'assistant' AND CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"name\":\"exec\"%' AND CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"type\":\"toolCall\"%' AND (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"rm %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"sudo %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"chmod %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"chown %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"rmdir %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"kill %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"killall %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"dd %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%&& rm %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%; rm %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%| sh%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%| bash%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"scp %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"nc %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%') AND $__timeFilter(timestamp)",
+          "refId": "A"
+        }
+      ],
+      "title": "Dangerous Commands",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_DORIS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) as `Injection Hits` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['message']['role'] = 'toolResult' AND (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%ignore previous instructions%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%ignore all previous%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%disregard%instructions%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%forget your instructions%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%you are now%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%pretend you are%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%system prompt%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%DAN mode%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%jailbreak%') AND $__timeFilter(timestamp)",
+          "refId": "A"
+        }
+      ],
+      "title": "Prompt Injection",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_DORIS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "orange",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) as `Outbound Actions` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['message']['role'] = 'toolResult' AND CAST(log_attributes['message']['toolName'] AS TEXT) IN ('gateway', 'send_message', 'send_email', 'reply') AND $__timeFilter(timestamp)",
+          "refId": "A"
+        }
+      ],
+      "title": "Outbound Actions",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_DORIS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) as `Sensitive Access` FROM otel.otel_logs WHERE log_attributes['log']['source'] = 'session' AND log_attributes['message']['role'] = 'toolResult' AND CAST(log_attributes['message']['toolName'] AS TEXT) NOT IN ('web_search', 'web_fetch', 'browser') AND (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%/.env%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%credentials.json%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%aws_access_key%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%service_account%') AND $__timeFilter(timestamp)",
+          "refId": "A"
+        }
+      ],
+      "title": "Sensitive File Access",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_DORIS}"
+      },
+      "description": "Trend of security-sensitive actions over time. Use this to spot unusual spikes in exec calls, outbound actions, or errors — a sudden change may indicate compromised agent behavior.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "Actions",
+            "axisPlacement": "auto",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "exec"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "browser"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "web_fetch"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "gateway"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "send_message"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "send_email"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "errors"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              },
+              {
+                "id": "custom.stacking",
+                "value": {
+                  "group": "B",
+                  "mode": "none"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as metric,\n  count(*) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND CAST(log_attributes['message']['toolName'] AS TEXT) IN ('exec', 'browser', 'web_fetch', 'gateway', 'send_message', 'send_email')\n  AND $__timeFilter(timestamp)\nGROUP BY 1, CAST(log_attributes['message']['toolName'] AS TEXT)\nORDER BY 1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  'errors' as metric,\n  count(*) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND CAST(log_attributes['message']['isError'] AS TEXT) = 'true'\n  AND $__timeFilter(timestamp)\nGROUP BY 1\nORDER BY 1",
+          "refId": "B"
+        }
+      ],
+      "title": "Security Event Timeline",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "mysql",
+        "uid": "${DS_DORIS}"
+      },
+      "description": "Sessions ranked by risk score. High-risk sessions need closer review. Score = exec*3 + web*2 + outbound*5 + error*1 + sensitive_file*10.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": true,
+            "filterable": true
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "risk_score"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "orange",
+                      "value": 15
+                    },
+                    {
+                      "color": "red",
+                      "value": 30
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "session_id"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 11
+      },
+      "id": 7,
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "risk_score"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  count(*) as total_actions,\n  SUM(CASE WHEN CAST(log_attributes['message']['toolName'] AS TEXT) = 'exec' THEN 1 ELSE 0 END) as exec_calls,\n  SUM(CASE WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('browser', 'web_fetch') THEN 1 ELSE 0 END) as web_calls,\n  SUM(CASE WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('gateway', 'send_message', 'send_email', 'reply') THEN 1 ELSE 0 END) as outbound_calls,\n  SUM(CASE WHEN CAST(log_attributes['message']['isError'] AS TEXT) = 'true' THEN 1 ELSE 0 END) as errors,\n  SUM(CASE WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%/.env%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%credentials.json%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%aws_access_key%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%service_account%' THEN 1 ELSE 0 END) as sensitive_access,\n  (\n    SUM(CASE WHEN CAST(log_attributes['message']['toolName'] AS TEXT) = 'exec' THEN 3 ELSE 0 END)\n    + SUM(CASE WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('browser', 'web_fetch') THEN 2 ELSE 0 END)\n    + SUM(CASE WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('gateway', 'send_message', 'send_email') THEN 5 ELSE 0 END)\n    + SUM(CASE WHEN CAST(log_attributes['message']['isError'] AS TEXT) = 'true' THEN 1 ELSE 0 END)\n    + SUM(CASE WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%/.env%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%credentials.json%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%aws_access_key%' THEN 10 ELSE 0 END)\n  ) as risk_score\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND $__timeFilter(timestamp)\nGROUP BY LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8)\nORDER BY risk_score DESC\nLIMIT 20",
+          "refId": "A"
+        }
+      ],
+      "title": "Top Risk Sessions",
+      "type": "table"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 200,
+      "title": "Dangerous Command Details",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "Detects potentially dangerous shell commands executed by the AI agent via the exec tool. Flags commands that could delete files, escalate privileges, exfiltrate data, or access sensitive credentials.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": true,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "command"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 500
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "risk_category"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "DESTRUCTIVE": {
+                            "color": "red",
+                            "text": "DESTRUCTIVE"
+                          },
+                          "PRIVILEGE_ESCALATION": {
+                            "color": "red",
+                            "text": "PRIVILEGE_ESCALATION"
+                          },
+                          "DATA_EXFIL": {
+                            "color": "orange",
+                            "text": "DATA_EXFIL"
+                          },
+                          "CREDENTIAL_ACCESS": {
+                            "color": "orange",
+                            "text": "CREDENTIAL_ACCESS"
+                          },
+                          "NETWORK": {
+                            "color": "yellow",
+                            "text": "NETWORK"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 20
+          },
+          "id": 10,
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CASE\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"rm %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"rmdir %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%&& rm %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%; rm %' THEN 'DESTRUCTIVE'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"sudo %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"chmod %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"chown %' THEN 'PRIVILEGE_ESCALATION'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%| sh%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%| bash%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"scp %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"nc %' THEN 'DATA_EXFIL'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%/.env%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%credentials.json%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%aws_access_key%' THEN 'CREDENTIAL_ACCESS'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"kill %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"killall %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"dd %' THEN 'DESTRUCTIVE'\n    ELSE 'OTHER'\n  END as risk_category,\n  REGEXP_EXTRACT(CAST(log_attributes['message']['content'] AS TEXT), '\"command\":\"([^\"]+)\"', 1) as command\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'assistant'\n  AND CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"name\":\"exec\"%'\n  AND CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"type\":\"toolCall\"%'\n  AND (\n    CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"rm %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"sudo %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"chmod %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"chown %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"rmdir %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"kill %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"killall %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"dd %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%&& rm %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%; rm %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%| sh%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%| bash%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"scp %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%\"command\":\"nc %'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%'\n  )\n  AND $__timeFilter(timestamp)\nORDER BY 1 DESC\nLIMIT 200",
+              "refId": "A"
+            }
+          ],
+          "title": "Dangerous Command Detection",
+          "type": "table"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "id": 201,
+      "title": "Prompt Injection Details",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "Detects actual prompt injection attempts hidden inside external content. Normal web fetches are NOT flagged — only content containing suspicious instruction patterns.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": true,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "suspicious_content"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 600
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "risk_type"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "INJECTION_PATTERN": {
+                            "color": "red",
+                            "text": "INJECTION_PATTERN"
+                          },
+                          "ROLE_HIJACK": {
+                            "color": "red",
+                            "text": "ROLE_HIJACK"
+                          },
+                          "HIDDEN_INSTRUCTION": {
+                            "color": "orange",
+                            "text": "HIDDEN_INSTRUCTION"
+                          },
+                          "JAILBREAK": {
+                            "color": "red",
+                            "text": "JAILBREAK"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "tool"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 21
+          },
+          "id": 11,
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as tool,\n  CASE\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%ignore previous instructions%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%ignore all previous%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%disregard%instructions%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%forget your instructions%' THEN 'INJECTION_PATTERN'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%you are now%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%pretend you are%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%act as if%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%system prompt%' THEN 'ROLE_HIJACK'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%new instructions:%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%execute the following%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%run this command%' THEN 'HIDDEN_INSTRUCTION'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%DAN mode%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%jailbreak%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%bypass%filter%' THEN 'JAILBREAK'\n    ELSE 'SUSPICIOUS'\n  END as risk_type,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 500) as suspicious_content\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND (\n    CAST(log_attributes['message']['content'] AS TEXT) LIKE '%ignore previous instructions%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%ignore all previous%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%disregard%instructions%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%forget your instructions%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%you are now%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%pretend you are%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%act as if%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%system prompt%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%new instructions:%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%execute the following%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%run this command%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%DAN mode%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%jailbreak%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%bypass%filter%'\n  )\n  AND $__timeFilter(timestamp)\nORDER BY 1 DESC\nLIMIT 200",
+              "refId": "A"
+            }
+          ],
+          "title": "Prompt Injection Detection",
+          "type": "table"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 202,
+      "title": "Outbound Data Flow",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "All outbound actions by the AI agent: emails, messages, web requests, API calls via exec. These can exfiltrate data or perform unauthorized actions.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": true,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "content"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 600
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "action_type"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "EMAIL": {
+                            "color": "red",
+                            "text": "EMAIL"
+                          },
+                          "WEB_ACCESS": {
+                            "color": "yellow",
+                            "text": "WEB_ACCESS"
+                          },
+                          "API_CALL": {
+                            "color": "orange",
+                            "text": "API_CALL"
+                          },
+                          "MESSAGE_SEND": {
+                            "color": "orange",
+                            "text": "MESSAGE_SEND"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "tool"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 22
+          },
+          "id": 12,
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as tool,\n  CASE\n    WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('send_email', 'email') THEN 'EMAIL'\n    WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('browser', 'web_fetch') THEN 'WEB_ACCESS'\n    WHEN CAST(log_attributes['message']['toolName'] AS TEXT) = 'exec' AND (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%curl %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%wget %') THEN 'API_CALL'\n    WHEN CAST(log_attributes['message']['toolName'] AS TEXT) IN ('send_message', 'reply', 'gateway') THEN 'MESSAGE_SEND'\n    ELSE 'OTHER'\n  END as action_type,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 500) as content\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND (\n    CAST(log_attributes['message']['toolName'] AS TEXT) IN ('browser', 'web_fetch', 'send_email', 'email', 'send_message', 'reply', 'gateway')\n    OR (CAST(log_attributes['message']['toolName'] AS TEXT) = 'exec' AND (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%curl %' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%wget %'))\n  )\n  AND $__timeFilter(timestamp)\nORDER BY 1 DESC\nLIMIT 300",
+              "refId": "A"
+            }
+          ],
+          "title": "Outbound Data Flow Audit",
+          "type": "table"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 203,
+      "title": "Sensitive File Access",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "Detects when the AI agent accesses sensitive files: SSH keys, .env files, credentials, etc. Only filesystem tools are monitored (web tools excluded).",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": true,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "content"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 600
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "file_type"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "SSH_KEY": {
+                            "color": "red",
+                            "text": "SSH_KEY"
+                          },
+                          "ENV_FILE": {
+                            "color": "red",
+                            "text": "ENV_FILE"
+                          },
+                          "CREDENTIALS": {
+                            "color": "red",
+                            "text": "CREDENTIALS"
+                          },
+                          "CONFIG_SECRET": {
+                            "color": "orange",
+                            "text": "CONFIG_SECRET"
+                          },
+                          "HISTORY": {
+                            "color": "yellow",
+                            "text": "HISTORY"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 23
+          },
+          "id": 14,
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as tool,\n  CASE\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/id_%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/authorized_keys%' THEN 'SSH_KEY'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%/.env%' THEN 'ENV_FILE'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%credentials.json%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%aws_access_key%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%service_account%' THEN 'CREDENTIALS'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%config%' AND (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%password%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%secret%') THEN 'CONFIG_SECRET'\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.bash_history%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.zsh_history%' THEN 'HISTORY'\n    ELSE 'OTHER'\n  END as file_type,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 500) as content\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND CAST(log_attributes['message']['toolName'] AS TEXT) NOT IN ('web_search', 'web_fetch', 'browser')\n  AND (\n    CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.ssh/%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%/.env%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%credentials.json%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%aws_access_key%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%service_account%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.bash_history%'\n    OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%.zsh_history%'\n    OR (CAST(log_attributes['message']['content'] AS TEXT) LIKE '%config%' AND (\n      CAST(log_attributes['message']['content'] AS TEXT) LIKE '%password%'\n      OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%secret%'\n    ))\n  )\n  AND $__timeFilter(timestamp)\nORDER BY 1 DESC\nLIMIT 200",
+              "refId": "A"
+            }
+          ],
+          "title": "Sensitive File Access Log",
+          "type": "table"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 300,
+      "title": "Conversation Audit Trail",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "Complete audit trail of all user messages with channel detection. Use column filters to search conversations.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": true,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "content"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 700
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "channel"
+                },
+                "properties": [
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 100
+                  },
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "WhatsApp": {
+                            "color": "green",
+                            "text": "WhatsApp"
+                          },
+                          "Web": {
+                            "color": "blue",
+                            "text": "Web"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 24
+          },
+          "id": 20,
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CASE\n    WHEN CAST(log_attributes['message']['content'] AS TEXT) LIKE '%WhatsApp%' OR CAST(log_attributes['message']['content'] AS TEXT) LIKE '%System:%' THEN 'WhatsApp'\n    ELSE 'Web'\n  END as channel,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 1000) as content\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'user'\n  AND $__timeFilter(timestamp)\nORDER BY timestamp DESC\nLIMIT 500",
+              "refId": "A"
+            }
+          ],
+          "title": "User Message Audit Trail",
+          "type": "table"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 301,
+      "title": "Full Tool Execution Log",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "Complete log of all tool executions. Use for forensic investigation when a risk is detected in the overview.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": true,
+                "filterable": true
+              },
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "result"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 600
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "tool"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 100
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "is_error"
+                },
+                "properties": [
+                  {
+                    "id": "mappings",
+                    "value": [
+                      {
+                        "type": "value",
+                        "options": {
+                          "0": {
+                            "color": "green",
+                            "text": "OK"
+                          },
+                          "1": {
+                            "color": "red",
+                            "text": "ERROR"
+                          },
+                          "true": {
+                            "color": "red",
+                            "text": "ERROR"
+                          },
+                          "false": {
+                            "color": "green",
+                            "text": "OK"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-text"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "session_id"
+                },
+                "properties": [
+                  {
+                    "id": "custom.width",
+                    "value": 120
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 12,
+            "w": 24,
+            "x": 0,
+            "y": 25
+          },
+          "id": 21,
+          "options": {
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "time"
+              }
+            ]
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "table",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  timestamp as time,\n  LEFT(CAST(log_attributes['log']['file']['name'] AS TEXT), 8) as session_id,\n  CAST(log_attributes['message']['toolName'] AS TEXT) as tool,\n  CAST(log_attributes['message']['isError'] AS TEXT) as is_error,\n  LEFT(CAST(log_attributes['message']['content'] AS TEXT), 800) as result\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND $__timeFilter(timestamp)\nORDER BY timestamp DESC\nLIMIT 500",
+              "refId": "A"
+            }
+          ],
+          "title": "Tool Execution Log",
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "mysql",
+            "uid": "${DS_DORIS}"
+          },
+          "description": "Error rate trend. A sudden spike may indicate the AI is trying forbidden operations or hitting permission boundaries.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisLabel": "Count",
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "lineWidth": 2,
+                "showPoints": "auto",
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                }
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "errors"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "red",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "total"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "blue",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 24,
+            "x": 0,
+            "y": 37
+          },
+          "id": 22,
+          "options": {
+            "legend": {
+              "calcs": [
+                "sum"
+              ],
+              "displayMode": "table",
+              "placement": "bottom"
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "time_series",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  'total' as metric,\n  count(*) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND $__timeFilter(timestamp)\nGROUP BY 1\nORDER BY 1",
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "mysql",
+                "uid": "${DS_DORIS}"
+              },
+              "editorMode": "code",
+              "format": "time_series",
+              "rawQuery": true,
+              "rawSql": "SELECT\n  DATE_TRUNC(timestamp, 'hour') as time,\n  'errors' as metric,\n  count(*) as value\nFROM otel.otel_logs\nWHERE log_attributes['log']['source'] = 'session'\n  AND log_attributes['message']['role'] = 'toolResult'\n  AND CAST(log_attributes['message']['isError'] AS TEXT) = 'true'\n  AND $__timeFilter(timestamp)\nGROUP BY 1\nORDER BY 1",
+              "refId": "B"
+            }
+          ],
+          "title": "Tool Calls vs Errors Over Time",
+          "type": "timeseries"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "openclaw",
+    "ai-observability",
+    "security"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Doris",
+          "value": "doris"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "DS_DORIS",
+        "options": [],
+        "query": "mysql",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "OpenClaw - Security & Audit",
+  "uid": "openclaw-audit",
+  "version": 1
+}

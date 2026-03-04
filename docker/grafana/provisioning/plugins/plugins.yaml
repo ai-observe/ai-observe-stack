@@ -1,0 +1,9 @@
+# Grafana Plugin Provisioning
+# Auto-enable doris-app plugin on startup
+
+apiVersion: 1
+
+apps:
+  - type: doris-app
+    org_id: 1
+    disabled: false
