@@ -1,12 +1,11 @@
 # Deployment
 
-This guide covers three ways to deploy AIObserve Stack. Choose the method that fits your environment:
+This guide covers two ways to deploy AIObserve Stack. Choose the method that fits your environment:
 
 | Method | Best for |
 |--------|----------|
 | Docker Compose | Local testing, development, PoC |
 | Kubernetes (Helm) | Production, scalable environments |
-| Manual | Custom setups, existing infrastructure |
 
 Each method deploys the core components: OpenTelemetry Collector, Apache Doris, and Grafana with Doris App Plugin. For data collection configuration.
 
@@ -72,12 +71,8 @@ Best for local testing, development, and proof of concepts (PoC).
 | Service | Endpoint | Credentials |
 |---------|----------|-------------|
 | Grafana | http://localhost:3000 | admin / admin |
-| Doris FE UI | http://localhost:8030 | root / (empty) |
-| Doris MySQL | localhost:9030 | root / (empty) |
 | OTel gRPC | localhost:4317 | - |
 | OTel HTTP | localhost:4318 | - |
-
-> **Note:** Doris FE UI and Doris MySQL endpoints are only available with the built-in Doris. When using an external Doris, access your existing cluster directly.
 
 ## Stop and clean up
 
@@ -168,19 +163,4 @@ Best for production deployments, development environments, and scalable setups.
 helm uninstall my-aiobs -n ai-observe-stack
 kubectl delete namespace ai-observe-stack
 ```
-
-# Manually
-
-Best for custom setups or integrating with existing infrastructure.
-
-1. Deploy Apache Doris following the [Doris deployment documentation](https://doris.apache.org/docs/4.x/install/preparation/env-checking).
-   Skip this step if you already have a Doris cluster.
-
-2. Deploy OpenTelemetry Collector following the [installation guide](https://opentelemetry.io/docs/collector/install/).
-
-3. Deploy Grafana following the [Grafana installation documentation](https://grafana.com/docs/grafana/latest/setup-grafana/installation/).
-
-4. Install the AIObserve Stack Grafana plugin. See [Plugin Installation](docs/plugin-installation.md).
-
-After completing all steps, access Grafana at http://localhost:3000.
 
