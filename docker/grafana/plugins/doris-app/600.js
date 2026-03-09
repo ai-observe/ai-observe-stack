@@ -1,8 +1,8 @@
 "use strict";
 (self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[600],{
 
-/***/ 2600:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 2600
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
@@ -170,8 +170,8 @@ const CircleHelp = createLucideIcon("circle-help", __iconNode);
 var ui_ = __webpack_require__(2007);
 // EXTERNAL MODULE: ../node_modules/jotai/esm/react.mjs
 var react = __webpack_require__(3689);
-// EXTERNAL MODULE: ../node_modules/antd/es/tooltip/index.js + 90 modules
-var tooltip = __webpack_require__(5395);
+// EXTERNAL MODULE: ../node_modules/antd/es/tooltip/index.js + 91 modules
+var tooltip = __webpack_require__(838);
 // EXTERNAL MODULE: ./store/traces.ts
 var store_traces = __webpack_require__(3982);
 // EXTERNAL MODULE: external "@emotion/css"
@@ -672,14 +672,16 @@ const CascaderStyle = (0,css_.css)`
 
 // EXTERNAL MODULE: external "@grafana/runtime"
 var runtime_ = __webpack_require__(8531);
+// EXTERNAL MODULE: external "@grafana/data"
+var data_ = __webpack_require__(7781);
+// EXTERNAL MODULE: ./types/plugin-settings.ts
+var plugin_settings = __webpack_require__(325);
 // EXTERNAL MODULE: ./utils/data.ts
 var utils_data = __webpack_require__(6700);
 // EXTERNAL MODULE: ./constants.ts + 1 modules
 var constants = __webpack_require__(2351);
 // EXTERNAL MODULE: ./services/metaservice.ts
 var metaservice = __webpack_require__(8161);
-// EXTERNAL MODULE: external "@grafana/data"
-var data_ = __webpack_require__(7781);
 ;// ./components/traces/traces-header/index.tsx
 'use client';
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -776,6 +778,41 @@ function _object_spread_props(target, source) {
 
 
 
+
+
+function getStoredValue(key) {
+    if (typeof window === 'undefined') {
+        return undefined;
+    }
+    try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) {
+            return undefined;
+        }
+        return JSON.parse(raw);
+    } catch (unused) {
+        return undefined;
+    }
+}
+function resolveDatasourceUid(dataSource) {
+    if (!dataSource) {
+        return '';
+    }
+    if (typeof dataSource === 'string') {
+        const matched = (0,runtime_.getDataSourceSrv)().getList().find((ds)=>ds.uid === dataSource || ds.name === dataSource);
+        return (matched === null || matched === void 0 ? void 0 : matched.uid) || dataSource;
+    }
+    if (typeof dataSource === 'object') {
+        if (dataSource.uid) {
+            return dataSource.uid;
+        }
+        if (dataSource.name) {
+            const matched = (0,runtime_.getDataSourceSrv)().getList().find((ds)=>ds.name === dataSource.name);
+            return (matched === null || matched === void 0 ? void 0 : matched.uid) || '';
+        }
+    }
+    return '';
+}
 function TracesHeader() {
     // const catalogs = useAtomValue(catalogAtom);
     const setIndexes = (0,react/* useSetAtom */.Xr)(discover/* indexesAtom */.Eq);
@@ -796,8 +833,32 @@ function TracesHeader() {
     const [tables, setTables] = (0,react/* useAtom */.fp)(discover/* tablesAtom */.b9);
     const [_datasources, setDataSource] = (0,react/* useAtom */.fp)(discover/* datasourcesAtom */.ui);
     const setDisabledOptions = (0,react/* useSetAtom */.Xr)(discover/* disabledOptionsAtom */.IH);
-    const [initDataSource, setInitDataSource] = (0,react/* useAtom */.fp)(discover/* initDS */.cw);
     const selectdbDS = (0,react/* useAtomValue */.md)(discover/* selectedDatasourceAtom */.SW);
+    const context = (0,data_.usePluginContext)();
+    const jsonData = context.meta.jsonData || {};
+    const logsConfig = (0,plugin_settings/* mergeLogsConfig */.o)(jsonData.logsConfig);
+    const fetchDatabases = external_react_default().useCallback((ds)=>{
+        if (!ds) {
+            return undefined;
+        }
+        return (0,metaservice/* getDatabases */.Hm)(ds).subscribe({
+            next: (resp)=>{
+                const { data, ok } = resp;
+                if (ok) {
+                    const frame = (0,data_.toDataFrame)(data.results.getDatabases.frames[0]);
+                    const values = Array.from(frame.fields[0].values);
+                    const options = values.map((item)=>({
+                            label: item,
+                            value: item
+                        }));
+                    setDatabases(options);
+                }
+            },
+            error: (err)=>console.log('Fetch Error', err)
+        });
+    }, [
+        setDatabases
+    ]);
     (0,external_react_.useEffect)(()=>{
         const datasources = (0,runtime_.getDataSourceSrv)().getList();
         setDataSource(datasources);
@@ -821,30 +882,22 @@ function TracesHeader() {
         if (!selectdbDS) {
             return;
         }
-        const subscription = (0,metaservice/* getDatabases */.Hm)(selectdbDS).subscribe({
-            next: (resp)=>{
-                const { data, ok } = resp;
-                if (ok) {
-                    const frame = (0,data_.toDataFrame)(data.results.getDatabases.frames[0]);
-                    const values = Array.from(frame.fields[0].values);
-                    const options = values.map((item)=>({
-                            label: item,
-                            value: item
-                        }));
-                    setDatabases(options);
-                }
-            },
-            error: (err)=>console.log('Fetch Error', err)
-        });
-        return ()=>subscription.unsubscribe();
+        const subscription = fetchDatabases(selectdbDS);
+        return ()=>subscription === null || subscription === void 0 ? void 0 : subscription.unsubscribe();
     }, [
         selectdbDS,
-        setDatabases
+        fetchDatabases
     ]);
-    function getFields(selectedTable) {
+    function getFields(selectedTable, initOptions) {
+        var _ref, _ref1;
+        const effectiveDatasource = (_ref = initOptions === null || initOptions === void 0 ? void 0 : initOptions.datasource) !== null && _ref !== void 0 ? _ref : selectdbDS;
+        const effectiveDatabase = (_ref1 = initOptions === null || initOptions === void 0 ? void 0 : initOptions.database) !== null && _ref1 !== void 0 ? _ref1 : discoverCurrent.database;
+        if (!effectiveDatasource || !effectiveDatabase || !(selectedTable === null || selectedTable === void 0 ? void 0 : selectedTable.value)) {
+            return;
+        }
         (0,metaservice/* getFieldsService */.H1)({
-            selectdbDS,
-            database: discoverCurrent.database,
+            selectdbDS: effectiveDatasource,
+            database: effectiveDatabase,
             table: selectedTable.value
         }).subscribe({
             next: ({ data, ok })=>{
@@ -863,7 +916,8 @@ function TracesHeader() {
                     });
                     setTableFields(tableFields);
                     if (values) {
-                        var _options_;
+                        var _ref;
+                        var _options_find, _options_;
                         const options = values.filter((field, index)=>{
                             return (0,utils_data/* isValidTimeFieldType */.Q3)(fieldTypes[index].toUpperCase());
                         }).map((item)=>{
@@ -872,9 +926,13 @@ function TracesHeader() {
                                 value: item
                             };
                         });
-                        setDiscoverCurrent(_object_spread_props(_object_spread({}, discoverCurrent), {
-                            timeField: ((_options_ = options[0]) === null || _options_ === void 0 ? void 0 : _options_.value) || ''
-                        }));
+                        const preferredTimeField = (_ref = initOptions === null || initOptions === void 0 ? void 0 : initOptions.preferredTimeField) !== null && _ref !== void 0 ? _ref : currentTimeField;
+                        const targetTimeField = ((_options_find = options.find((option)=>option.value === preferredTimeField)) === null || _options_find === void 0 ? void 0 : _options_find.value) || ((_options_ = options[0]) === null || _options_ === void 0 ? void 0 : _options_.value) || '';
+                        setDiscoverCurrent((prev)=>_object_spread_props(_object_spread({}, prev), {
+                                database: effectiveDatabase,
+                                table: selectedTable.value,
+                                timeField: targetTimeField || prev.timeField
+                            }));
                         setTimeFields(options);
                     }
                 }
@@ -884,10 +942,16 @@ function TracesHeader() {
             }
         });
     }
-    function getIndexes(selectedTable) {
+    function getIndexes(selectedTable, initOptions) {
+        var _ref, _ref1;
+        const effectiveDatasource = (_ref = initOptions === null || initOptions === void 0 ? void 0 : initOptions.datasource) !== null && _ref !== void 0 ? _ref : selectdbDS;
+        const effectiveDatabase = (_ref1 = initOptions === null || initOptions === void 0 ? void 0 : initOptions.database) !== null && _ref1 !== void 0 ? _ref1 : discoverCurrent.database;
+        if (!effectiveDatasource || !effectiveDatabase || !(selectedTable === null || selectedTable === void 0 ? void 0 : selectedTable.value)) {
+            return;
+        }
         (0,metaservice/* getIndexesService */.s1)({
-            selectdbDS,
-            database: discoverCurrent.database,
+            selectdbDS: effectiveDatasource,
+            database: effectiveDatabase,
             table: selectedTable.value
         }).subscribe({
             next: ({ data, ok })=>{
@@ -922,50 +986,80 @@ function TracesHeader() {
     }
     function initHeaderData() {
         return _async_to_generator(function*() {
-            const ds = yield (0,runtime_.getDataSourceSrv)().get({
-                uid: utils_data/* INIT_DEMO_DATA */.I$.dsUid
-            });
-            setInitDataSource(ds);
-            setSelectedDatasource(ds);
+            const persistedDatasourceStorage = getStoredValue('discover-selected-datasource');
+            const persistedDiscoverCurrentStorage = getStoredValue('discover-current');
+            const persistedTraceTableStorage = getStoredValue('trace-current-table');
+            const configuredDatasourceUid = resolveDatasourceUid(logsConfig.datasource);
+            const persistedDatasourceUid = (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.uid) || (persistedDatasourceStorage === null || persistedDatasourceStorage === void 0 ? void 0 : persistedDatasourceStorage.uid);
+            const persistedDatabase = discoverCurrent.database || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.database) || '';
+            const persistedTable = currentTable || persistedTraceTableStorage || '';
+            const persistedTimeField = discoverCurrent.timeField || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.timeField) || '';
+            const defaultDatasourceUid = persistedDatasourceUid || configuredDatasourceUid || '';
+            const defaultDatabase = persistedDatabase || logsConfig.database || '';
+            const defaultTraceTable = persistedTable || logsConfig.targetTraceTable || logsConfig.logsTable || '';
+            if (!defaultDatasourceUid || !defaultDatabase) {
+                return;
+            }
+            try {
+                const ds = (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.uid) === defaultDatasourceUid ? selectedDatasource : yield (0,runtime_.getDataSourceSrv)().get({
+                    uid: defaultDatasourceUid
+                });
+                if (!ds) {
+                    return;
+                }
+                if ((selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.uid) !== defaultDatasourceUid) {
+                    setSelectedDatasource(ds);
+                }
+                fetchDatabases(ds);
+                (0,metaservice/* getTablesService */.Rw)({
+                    selectdbDS: ds,
+                    database: defaultDatabase
+                }).subscribe({
+                    next: (resp)=>{
+                        const { data, ok } = resp;
+                        if (ok) {
+                            var _options_find, _options_;
+                            const frame = (0,data_.toDataFrame)(data.results.getTables.frames[0]);
+                            const values = Array.from(frame.fields[0].values);
+                            const options = values.map((item)=>({
+                                    label: item,
+                                    value: item
+                                }));
+                            const targetTable = ((_options_find = options.find((option)=>option.value === defaultTraceTable)) === null || _options_find === void 0 ? void 0 : _options_find.value) || ((_options_ = options[0]) === null || _options_ === void 0 ? void 0 : _options_.value) || '';
+                            setTables(options);
+                            setCurrentTable(targetTable);
+                            setDiscoverCurrent((prev)=>_object_spread_props(_object_spread({}, prev), {
+                                    database: defaultDatabase,
+                                    table: targetTable
+                                }));
+                            if (targetTable) {
+                                getFields({
+                                    value: targetTable
+                                }, {
+                                    datasource: ds,
+                                    database: defaultDatabase,
+                                    preferredTimeField: persistedTimeField
+                                });
+                                getIndexes({
+                                    value: targetTable
+                                }, {
+                                    datasource: ds,
+                                    database: defaultDatabase
+                                });
+                            }
+                        }
+                    },
+                    error: (err)=>console.log('Fetch Error', err)
+                });
+            } catch (error) {
+                console.error('Failed to initialize trace defaults from plugin config', error);
+            }
         })();
     }
     (0,external_react_.useEffect)(()=>{
-        if (initDataSource) {
-            (0,metaservice/* getTablesService */.Rw)({
-                selectdbDS: initDataSource,
-                database: utils_data/* INIT_DEMO_DATA */.I$.datasource
-            }).subscribe({
-                next: (resp)=>{
-                    const { data, ok } = resp;
-                    if (ok) {
-                        const frame = (0,data_.toDataFrame)(data.results.getTables.frames[0]);
-                        const values = Array.from(frame.fields[0].values);
-                        const options = values.map((item)=>({
-                                label: item,
-                                value: item
-                            }));
-                        setTables(options);
-                        setCurrentTable(utils_data/* INIT_DEMO_DATA */.I$.tracesTable);
-                        setDiscoverCurrent(_object_spread_props(_object_spread({}, discoverCurrent), {
-                            database: utils_data/* INIT_DEMO_DATA */.I$.datasource,
-                            table: utils_data/* INIT_DEMO_DATA */.I$.tracesTable
-                        }));
-                        getFields({
-                            value: utils_data/* INIT_DEMO_DATA */.I$.tracesTable
-                        });
-                        getIndexes({
-                            value: utils_data/* INIT_DEMO_DATA */.I$.tracesTable
-                        });
-                    }
-                },
-                error: (err)=>console.log('Fetch Error', err)
-            });
-        }
-    }, [
-        initDataSource
-    ]);
-    (0,external_react_.useEffect)(()=>{
-        initHeaderData();
+        void initHeaderData();
+    // Initialize once: keep persisted values if they exist; otherwise apply config defaults.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return /*#__PURE__*/ external_react_default().createElement("div", {
         className: (0,css_.css)`
@@ -1354,23 +1448,31 @@ function PageTrace() {
         if (currentTimeField && currentTable && currentCatalog && currentDatabase && currentDate) {
             getTraces();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         page,
         pageSize,
         currentTimeField,
         currentDate,
-        sort
+        sort,
+        currentTable,
+        currentCatalog,
+        currentDatabase,
+        selectdbDS,
+        getTraces
     ]);
     (0,external_react_.useEffect)(()=>{
         if (currentTimeField && currentTable && currentCatalog && currentDatabase && currentDate) {
             getTracesServices();
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         currentTimeField,
         currentDate,
-        sort
+        sort,
+        currentTable,
+        currentCatalog,
+        currentDatabase,
+        selectdbDS,
+        getTracesServices
     ]);
     (0,external_react_.useEffect)(()=>{
         if (currentTimeField && currentTable && currentCatalog && currentDatabase && currentService) {
@@ -1437,7 +1539,7 @@ function PageTrace() {
 }
 
 
-/***/ })
+/***/ }
 
 }]);
-//# sourceMappingURL=600.js.map?_cache=d4eee3a1f2ffbc61b638
+//# sourceMappingURL=600.js.map?_cache=6eb5b58c884a80eedfb6

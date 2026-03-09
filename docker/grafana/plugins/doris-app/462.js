@@ -1,8 +1,8 @@
 "use strict";
 (self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[462],{
 
-/***/ 462:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 462
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
@@ -10,23 +10,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5959);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1159);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2351);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(1159);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2351);
 
 
 
-const Discover = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(17), __webpack_require__.e(261), __webpack_require__.e(815), __webpack_require__.e(51), __webpack_require__.e(285)]).then(__webpack_require__.bind(__webpack_require__, 9285)));
-const PageTrace = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(17), __webpack_require__.e(815), __webpack_require__.e(51), __webpack_require__.e(600)]).then(__webpack_require__.bind(__webpack_require__, 2600)));
+const Discover = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(608), __webpack_require__.e(321), __webpack_require__.e(131), __webpack_require__.e(51), __webpack_require__.e(285)]).then(__webpack_require__.bind(__webpack_require__, 9285)));
+const PageTrace = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(608), __webpack_require__.e(131), __webpack_require__.e(51), __webpack_require__.e(600)]).then(__webpack_require__.bind(__webpack_require__, 2600)));
 // const PageDashboard = React.lazy(() => import('../../pages/PageDashboard'));
 function App(_props) {
-    return /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Routes, null, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
-        path: _constants__WEBPACK_IMPORTED_MODULE_1__/* .ROUTES */ .bw.Discover,
+    return /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Routes, null, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
+        path: _constants__WEBPACK_IMPORTED_MODULE_2__/* .ROUTES */ .bw.Discover,
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Discover, null)
-    }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
-        path: `${_constants__WEBPACK_IMPORTED_MODULE_1__/* .ROUTES */ .bw.Traces}`,
+    }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
+        path: `${_constants__WEBPACK_IMPORTED_MODULE_2__/* .ROUTES */ .bw.Traces}`,
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(PageTrace, null)
-    }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Route, {
+    }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
         path: "*",
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Discover, null)
     }));
@@ -34,10 +34,10 @@ function App(_props) {
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
 
 
-/***/ }),
+/***/ },
 
-/***/ 2351:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 2351
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 
 // EXPORTS
@@ -58,6 +58,7 @@ const plugin_namespaceObject = {};
 // EXTERNAL MODULE: ../node_modules/lodash-es/groupBy.js + 4 modules
 var groupBy = __webpack_require__(35);
 ;// ./constants.ts
+/* unused harmony import specifier */ var pluginJson;
 
 
 const PLUGIN_BASE_URL = (/* unused pure expression or super */ null && (`/a/${pluginJson.id}`));
@@ -305,7 +306,7 @@ function translationDateIntervalType(type) {
 }
 
 
-/***/ })
+/***/ }
 
 }]);
-//# sourceMappingURL=462.js.map?_cache=7fc6104bcfe35df2c2cf
+//# sourceMappingURL=462.js.map?_cache=a08b30d94577ffd02f77

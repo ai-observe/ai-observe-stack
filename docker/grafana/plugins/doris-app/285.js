@@ -1,8 +1,8 @@
 "use strict";
 (self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[285],{
 
-/***/ 5611:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 5611
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   b: () => (/* binding */ testIds)
@@ -30,10 +30,10 @@ const testIds = {
 };
 
 
-/***/ }),
+/***/ },
 
-/***/ 9285:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 9285
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 // ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
@@ -135,8 +135,8 @@ var index_browser = __webpack_require__(8987);
 var discover = __webpack_require__(6247);
 // EXTERNAL MODULE: ./utils/data.ts
 var utils_data = __webpack_require__(6700);
-// EXTERNAL MODULE: ../node_modules/react-hook-form/dist/index.esm.js
-var index_esm = __webpack_require__(4199);
+// EXTERNAL MODULE: ../node_modules/react-hook-form/dist/index.esm.mjs
+var index_esm = __webpack_require__(9215);
 // EXTERNAL MODULE: ../node_modules/lodash-es/uniqBy.js + 9 modules
 var uniqBy = __webpack_require__(9851);
 ;// ./components/discover-filter/filter-content.tsx
@@ -1668,10 +1668,10 @@ function DiscoverHistogram() {
     })));
 }
 
-// EXTERNAL MODULE: ../node_modules/antd/es/tooltip/index.js + 90 modules
-var tooltip = __webpack_require__(5395);
-// EXTERNAL MODULE: ../node_modules/antd/es/button/index.js + 34 modules
-var es_button = __webpack_require__(7413);
+// EXTERNAL MODULE: ../node_modules/antd/es/tooltip/index.js + 91 modules
+var tooltip = __webpack_require__(838);
+// EXTERNAL MODULE: ../node_modules/antd/es/button/index.js + 19 modules
+var es_button = __webpack_require__(5277);
 // EXTERNAL MODULE: ../node_modules/@tanstack/react-table/build/lib/index.mjs
 var lib = __webpack_require__(7796);
 // EXTERNAL MODULE: ../node_modules/@tanstack/table-core/build/lib/index.mjs
@@ -2798,12 +2798,22 @@ var withErrorHandler = __webpack_require__(6472);
 ;// ./services/discover.ts
 function _object_without_properties(source, excluded) {
     if (source == null) return {};
-    var target = _object_without_properties_loose(source, excluded);
-    var key, i;
+    var target = {}, sourceKeys, key, i;
+    if (typeof Reflect !== "undefined" && Reflect.ownKeys) {
+        sourceKeys = Reflect.ownKeys(Object(source));
+        for(i = 0; i < sourceKeys.length; i++){
+            key = sourceKeys[i];
+            if (excluded.indexOf(key) >= 0) continue;
+            if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+            target[key] = source[key];
+        }
+        return target;
+    }
+    target = _object_without_properties_loose(source, excluded);
     if (Object.getOwnPropertySymbols) {
-        var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
-        for(i = 0; i < sourceSymbolKeys.length; i++){
-            key = sourceSymbolKeys[i];
+        sourceKeys = Object.getOwnPropertySymbols(source);
+        for(i = 0; i < sourceKeys.length; i++){
+            key = sourceKeys[i];
             if (excluded.indexOf(key) >= 0) continue;
             if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
             target[key] = source[key];
@@ -2813,12 +2823,11 @@ function _object_without_properties(source, excluded) {
 }
 function _object_without_properties_loose(source, excluded) {
     if (source == null) return {};
-    var target = {};
-    var sourceKeys = Object.keys(source);
-    var key, i;
+    var target = {}, sourceKeys = Object.getOwnPropertyNames(source), key, i;
     for(i = 0; i < sourceKeys.length; i++){
         key = sourceKeys[i];
         if (excluded.indexOf(key) >= 0) continue;
+        if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
         target[key] = source[key];
     }
     return target;
@@ -3405,7 +3414,7 @@ function SurroundingLogs() {
                                     try {
                                         const parsed = JSON.parse(cleanItem);
                                         return processObject(parsed);
-                                    } catch (e) {
+                                    } catch (unused) {
                                         return item;
                                     }
                                 }
@@ -3718,6 +3727,8 @@ function SurroundingLogs() {
 var trace_detail = __webpack_require__(1885);
 // EXTERNAL MODULE: external "@grafana/data"
 var data_ = __webpack_require__(7781);
+// EXTERNAL MODULE: ./types/plugin-settings.ts
+var plugin_settings = __webpack_require__(325);
 ;// ./components/discover-content/index.tsx
 'use client';
 function discover_content_define_property(obj, key, value) {
@@ -3774,12 +3785,22 @@ function discover_content_object_spread_props(target, source) {
 }
 function discover_content_object_without_properties(source, excluded) {
     if (source == null) return {};
-    var target = discover_content_object_without_properties_loose(source, excluded);
-    var key, i;
+    var target = {}, sourceKeys, key, i;
+    if (typeof Reflect !== "undefined" && Reflect.ownKeys) {
+        sourceKeys = Reflect.ownKeys(Object(source));
+        for(i = 0; i < sourceKeys.length; i++){
+            key = sourceKeys[i];
+            if (excluded.indexOf(key) >= 0) continue;
+            if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+            target[key] = source[key];
+        }
+        return target;
+    }
+    target = discover_content_object_without_properties_loose(source, excluded);
     if (Object.getOwnPropertySymbols) {
-        var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
-        for(i = 0; i < sourceSymbolKeys.length; i++){
-            key = sourceSymbolKeys[i];
+        sourceKeys = Object.getOwnPropertySymbols(source);
+        for(i = 0; i < sourceKeys.length; i++){
+            key = sourceKeys[i];
             if (excluded.indexOf(key) >= 0) continue;
             if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
             target[key] = source[key];
@@ -3789,16 +3810,16 @@ function discover_content_object_without_properties(source, excluded) {
 }
 function discover_content_object_without_properties_loose(source, excluded) {
     if (source == null) return {};
-    var target = {};
-    var sourceKeys = Object.keys(source);
-    var key, i;
+    var target = {}, sourceKeys = Object.getOwnPropertyNames(source), key, i;
     for(i = 0; i < sourceKeys.length; i++){
         key = sourceKeys[i];
         if (excluded.indexOf(key) >= 0) continue;
+        if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
         target[key] = source[key];
     }
     return target;
 }
+
 
 
 
@@ -3839,8 +3860,8 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
     const context = (0,data_.usePluginContext)();
     // user settings
     const jsonData = context.meta.jsonData || {};
-    const { logsConfig = {} } = jsonData;
-    const { database = "", datasource = {}, logsTable = "", targetTraceTable = utils_data/* INIT_DEMO_DATA */.I$.tracesTable } = logsConfig;
+    const logsConfig = (0,plugin_settings/* mergeLogsConfig */.o)(jsonData.logsConfig);
+    const { database = '', datasource, logsTable = '', targetTraceTable = '' } = logsConfig;
     // local input state for page-jump control
     const [jumpPage, setJumpPage] = (0,external_react_.useState)(String(page));
     (0,external_react_.useEffect)(()=>{
@@ -3848,7 +3869,13 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
     }, [
         page
     ]);
-    const isTargetLogTable = true;
+    const configuredDatasourceUid = typeof datasource === 'string' ? datasource : (datasource === null || datasource === void 0 ? void 0 : datasource.uid) || (datasource === null || datasource === void 0 ? void 0 : datasource.id);
+    const currentDatasourceIdentity = [
+        currentDatasource === null || currentDatasource === void 0 ? void 0 : currentDatasource.uid,
+        currentDatasource === null || currentDatasource === void 0 ? void 0 : currentDatasource.id,
+        currentDatasource === null || currentDatasource === void 0 ? void 0 : currentDatasource.name
+    ].filter(Boolean);
+    const isTargetLogTable = discoverCurrent.table === logsTable && discoverCurrent.database === database && (!configuredDatasourceUid || currentDatasourceIdentity.includes(configuredDatasourceUid));
     (0,external_react_.useEffect)(()=>{
         if (theme.isDark) {
             setFieldKeyBg('#3f3f4f');
@@ -3940,7 +3967,7 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
                                     try {
                                         const parsed = JSON.parse(cleanItem);
                                         return processObject(parsed);
-                                    } catch (e) {
+                                    } catch (unused) {
                                         return item;
                                     }
                                 }
@@ -4151,8 +4178,8 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
             dynamicColumns.push({
                 accessorKey: '_source',
                 header: '_source',
-                cell: (_param)=>{
-                    var { row, getValue } = _param, rest = discover_content_object_without_properties(_param, [
+                cell: (_0)=>{
+                    let { row, getValue } = _0, rest = discover_content_object_without_properties(_0, [
                         "row",
                         "getValue"
                     ]);
@@ -4356,7 +4383,7 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
                     setPage(target);
                     try {
                         fetchNextPage && fetchNextPage(target);
-                    } catch (e) {}
+                    } catch (unused) {}
                     setJumpPage(String(target));
                 } else {
                     // reset to current page if invalid
@@ -4379,7 +4406,7 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
                 setPage(target);
                 try {
                     fetchNextPage && fetchNextPage(target);
-                } catch (e) {}
+                } catch (unused) {}
                 setJumpPage(String(target));
             } else {
                 setJumpPage(String(page));
@@ -4732,6 +4759,40 @@ function discover_header_object_spread_props(target, source) {
 
 
 
+
+function getStoredValue(key) {
+    if (typeof window === 'undefined') {
+        return undefined;
+    }
+    try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) {
+            return undefined;
+        }
+        return JSON.parse(raw);
+    } catch (unused) {
+        return undefined;
+    }
+}
+function resolveDatasourceUid(dataSource) {
+    if (!dataSource) {
+        return '';
+    }
+    if (typeof dataSource === 'string') {
+        const matched = (0,runtime_.getDataSourceSrv)().getList().find((ds)=>ds.uid === dataSource || ds.name === dataSource);
+        return (matched === null || matched === void 0 ? void 0 : matched.uid) || dataSource;
+    }
+    if (typeof dataSource === 'object') {
+        if (dataSource.uid) {
+            return dataSource.uid;
+        }
+        if (dataSource.name) {
+            const matched = (0,runtime_.getDataSourceSrv)().getList().find((ds)=>ds.name === dataSource.name);
+            return (matched === null || matched === void 0 ? void 0 : matched.uid) || '';
+        }
+    }
+    return '';
+}
 function DiscoverHeader(props) {
     // const catalog = 'internal';
     // const catalogs = useAtomValue(catalogAtom);
@@ -4762,11 +4823,13 @@ function DiscoverHeader(props) {
     const [databases, setDatabases] = (0,react/* useAtom */.fp)(discover/* databasesAtom */.SK);
     const [tables, setTables] = (0,react/* useAtom */.fp)(discover/* tablesAtom */.b9);
     const [_datasources] = (0,react/* useAtom */.fp)(discover/* datasourcesAtom */.ui);
-    const [initDataSource, setInitDataSource] = (0,react/* useAtom */.fp)(discover/* initDS */.cw);
     const searchType = (0,react/* useAtomValue */.md)(discover/* searchTypeAtom */.WM);
     const searchMode = searchType === 'Search';
     const selectdbDS = (0,react/* useAtomValue */.md)(discover/* selectedDatasourceAtom */.SW);
     const theme = (0,ui_.useTheme2)();
+    const context = (0,data_.usePluginContext)();
+    const jsonData = context.meta.jsonData || {};
+    const logsConfig = (0,plugin_settings/* mergeLogsConfig */.o)(jsonData.logsConfig);
     const fetchDatabases = external_react_default().useCallback((ds)=>{
         if (!ds) {
             return undefined;
@@ -4799,15 +4862,22 @@ function DiscoverHeader(props) {
         selectdbDS,
         fetchDatabases
     ]);
-    function getFields(selectedTable) {
+    function getFields(selectedTable, initOptions) {
+        var _ref, _ref1;
+        const effectiveDatasource = (_ref = initOptions === null || initOptions === void 0 ? void 0 : initOptions.datasource) !== null && _ref !== void 0 ? _ref : selectdbDS;
+        const effectiveDatabase = (_ref1 = initOptions === null || initOptions === void 0 ? void 0 : initOptions.database) !== null && _ref1 !== void 0 ? _ref1 : discoverCurrent.database;
+        if (!effectiveDatasource || !effectiveDatabase || !(selectedTable === null || selectedTable === void 0 ? void 0 : selectedTable.value)) {
+            return;
+        }
         (0,metaservice/* getFieldsService */.H1)({
-            selectdbDS,
-            database: discoverCurrent.database,
+            selectdbDS: effectiveDatasource,
+            database: effectiveDatabase,
             table: selectedTable.value
         }).subscribe({
             next: ({ data, ok })=>{
                 if (ok) {
                     const frame = (0,data_.toDataFrame)(data.results.getFields.frames[0]);
+                    console.log('frame', frame);
                     const values = Array.from(frame.fields[0].values);
                     const fieldTypes = Array.from(frame.fields[1].values);
                     const tableFields = values.map((item, index)=>{
@@ -4820,7 +4890,8 @@ function DiscoverHeader(props) {
                     });
                     setTableFields(tableFields);
                     if (values) {
-                        var _options_;
+                        var _ref, _ref1;
+                        var _options_, _initOptions_onResolved;
                         const options = values.filter((field, index)=>{
                             return (0,utils_data/* isValidTimeFieldType */.Q3)(fieldTypes[index].toUpperCase());
                         }).map((item)=>{
@@ -4829,11 +4900,15 @@ function DiscoverHeader(props) {
                                 value: item
                             };
                         });
-                        setDiscoverCurrent(discover_header_object_spread_props(discover_header_object_spread({}, discoverCurrent), {
-                            table: selectedTable.value,
-                            timeField: ((_options_ = options[0]) === null || _options_ === void 0 ? void 0 : _options_.value) || ''
-                        }));
+                        const preferredTimeField = ((_ref = (_ref1 = initOptions === null || initOptions === void 0 ? void 0 : initOptions.preferredTimeField) !== null && _ref1 !== void 0 ? _ref1 : currentTimeField) !== null && _ref !== void 0 ? _ref : '').trim();
+                        const targetTimeField = preferredTimeField || ((_options_ = options[0]) === null || _options_ === void 0 ? void 0 : _options_.value) || '';
+                        setDiscoverCurrent((prev)=>discover_header_object_spread_props(discover_header_object_spread({}, prev), {
+                                database: effectiveDatabase,
+                                table: selectedTable.value,
+                                timeField: targetTimeField || prev.timeField
+                            }));
                         setTimeFields(options);
+                        initOptions === null || initOptions === void 0 ? void 0 : (_initOptions_onResolved = initOptions.onResolved) === null || _initOptions_onResolved === void 0 ? void 0 : _initOptions_onResolved.call(initOptions, targetTimeField);
                     }
                 }
             },
@@ -4842,10 +4917,16 @@ function DiscoverHeader(props) {
             }
         });
     }
-    function getIndexes(selectedTable) {
+    function getIndexes(selectedTable, initOptions) {
+        var _ref, _ref1;
+        const effectiveDatasource = (_ref = initOptions === null || initOptions === void 0 ? void 0 : initOptions.datasource) !== null && _ref !== void 0 ? _ref : selectdbDS;
+        const effectiveDatabase = (_ref1 = initOptions === null || initOptions === void 0 ? void 0 : initOptions.database) !== null && _ref1 !== void 0 ? _ref1 : discoverCurrent.database;
+        if (!effectiveDatasource || !effectiveDatabase || !(selectedTable === null || selectedTable === void 0 ? void 0 : selectedTable.value)) {
+            return;
+        }
         (0,metaservice/* getIndexesService */.s1)({
-            selectdbDS,
-            database: discoverCurrent.database,
+            selectdbDS: effectiveDatasource,
+            database: effectiveDatabase,
             table: selectedTable.value
         }).subscribe({
             next: ({ data, ok })=>{
@@ -4880,52 +4961,86 @@ function DiscoverHeader(props) {
     }
     function initHeaderData() {
         return discover_header_async_to_generator(function*() {
-            const ds = yield (0,runtime_.getDataSourceSrv)().get({
-                uid: utils_data/* INIT_DEMO_DATA */.I$.dsUid
-            });
-            setInitDataSource(ds);
-            setSelectedDatasource(ds);
+            const persistedDatasourceStorage = getStoredValue('discover-selected-datasource');
+            const persistedDiscoverCurrentStorage = getStoredValue('discover-current');
+            const persistedTableStorage = getStoredValue('discover-current-table');
+            const configuredDatasourceUid = resolveDatasourceUid(logsConfig.datasource);
+            const persistedDatasourceUid = (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.uid) || (persistedDatasourceStorage === null || persistedDatasourceStorage === void 0 ? void 0 : persistedDatasourceStorage.uid);
+            const persistedDatabase = discoverCurrent.database || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.database) || '';
+            const persistedTable = currentTable || persistedTableStorage || discoverCurrent.table || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.table) || '';
+            const persistedTimeField = discoverCurrent.timeField || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.timeField) || '';
+            const hasPersistedSelection = Boolean(persistedDatasourceUid && persistedDatabase && persistedTable && persistedTimeField);
+            const defaultDatasourceUid = persistedDatasourceUid || configuredDatasourceUid || '';
+            const defaultDatabase = persistedDatabase || logsConfig.database || '';
+            const defaultLogsTable = persistedTable || logsConfig.logsTable || '';
+            if (!defaultDatasourceUid || !defaultDatabase) {
+                return;
+            }
+            try {
+                const ds = (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.uid) === defaultDatasourceUid ? selectedDatasource : yield (0,runtime_.getDataSourceSrv)().get({
+                    uid: defaultDatasourceUid
+                });
+                if (!ds) {
+                    return;
+                }
+                if ((selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.uid) !== defaultDatasourceUid) {
+                    setSelectedDatasource(ds);
+                }
+                fetchDatabases(ds);
+                (0,metaservice/* getTablesService */.Rw)({
+                    selectdbDS: ds,
+                    database: defaultDatabase
+                }).subscribe({
+                    next: (resp)=>{
+                        const { data, ok } = resp;
+                        if (ok) {
+                            var _options_find, _options_;
+                            const frame = (0,data_.toDataFrame)(data.results.getTables.frames[0]);
+                            const values = Array.from(frame.fields[0].values);
+                            const options = values.map((item)=>({
+                                    label: item,
+                                    value: item
+                                }));
+                            const targetTable = ((_options_find = options.find((option)=>option.value === defaultLogsTable)) === null || _options_find === void 0 ? void 0 : _options_find.value) || ((_options_ = options[0]) === null || _options_ === void 0 ? void 0 : _options_.value) || '';
+                            setTables(options);
+                            setCurrentTable(targetTable);
+                            setDiscoverCurrent((prev)=>discover_header_object_spread_props(discover_header_object_spread({}, prev), {
+                                    database: defaultDatabase,
+                                    table: targetTable
+                                }));
+                            if (targetTable) {
+                                getFields({
+                                    value: targetTable
+                                }, {
+                                    datasource: ds,
+                                    database: defaultDatabase,
+                                    preferredTimeField: persistedTimeField,
+                                    onResolved: hasPersistedSelection ? (timeField)=>{
+                                        if (timeField && timeField === persistedTimeField) {
+                                            props === null || props === void 0 ? void 0 : props.onQuerying();
+                                        }
+                                    } : undefined
+                                });
+                                getIndexes({
+                                    value: targetTable
+                                }, {
+                                    datasource: ds,
+                                    database: defaultDatabase
+                                });
+                            }
+                        }
+                    },
+                    error: (err)=>console.log('Fetch Error', err)
+                });
+            } catch (error) {
+                console.error('Failed to initialize discover defaults from plugin config', error);
+            }
         })();
     }
     (0,external_react_.useEffect)(()=>{
-        if (initDataSource) {
-            fetchDatabases(initDataSource);
-            (0,metaservice/* getTablesService */.Rw)({
-                selectdbDS: initDataSource,
-                database: utils_data/* INIT_DEMO_DATA */.I$.datasource
-            }).subscribe({
-                next: (resp)=>{
-                    const { data, ok } = resp;
-                    if (ok) {
-                        const frame = (0,data_.toDataFrame)(data.results.getTables.frames[0]);
-                        const values = Array.from(frame.fields[0].values);
-                        const options = values.map((item)=>({
-                                label: item,
-                                value: item
-                            }));
-                        setTables(options);
-                        setCurrentTable(utils_data/* INIT_DEMO_DATA */.I$.logTable);
-                        setDiscoverCurrent(discover_header_object_spread_props(discover_header_object_spread({}, discoverCurrent), {
-                            database: utils_data/* INIT_DEMO_DATA */.I$.datasource,
-                            table: utils_data/* INIT_DEMO_DATA */.I$.logTable
-                        }));
-                        getFields({
-                            value: utils_data/* INIT_DEMO_DATA */.I$.logTable
-                        });
-                        getIndexes({
-                            value: utils_data/* INIT_DEMO_DATA */.I$.logTable
-                        });
-                        props === null || props === void 0 ? void 0 : props.onQuerying();
-                    }
-                },
-                error: (err)=>console.log('Fetch Error', err)
-            });
-        }
-    }, [
-        initDataSource
-    ]);
-    (0,external_react_.useEffect)(()=>{
-        initHeaderData();
+        void initHeaderData();
+    // We only want to apply plugin-config defaults once when the page mounts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return /*#__PURE__*/ external_react_default().createElement("div", {
         className: (0,css_.css)`
@@ -4947,6 +5062,7 @@ function DiscoverHeader(props) {
         noDefault: true,
         filter: (ds)=>ds.type === 'mysql',
         onChange: (item)=>{
+            console.log('item', item);
             setSelectedDatasource(item);
             // Always fetch databases even if the same datasource is selected
             fetchDatabases(item);
@@ -4993,6 +5109,7 @@ function DiscoverHeader(props) {
         width: 15,
         value: currentTable,
         onChange: (selectedTable)=>{
+            console.log('selectedTable.value', selectedTable.value);
             setDiscoverCurrent(discover_header_object_spread_props(discover_header_object_spread({}, discoverCurrent), {
                 table: selectedTable.value
             }));
@@ -5112,7 +5229,7 @@ function decodeSpecialTokens(query) {
 }
 
 ;// ./utils/query-parser/constants.ts
-const constants_IMPLICIT_FIELD = '<implicit>';
+const IMPLICIT_FIELD = '<implicit>';
 const CLICK_HOUSE_JSON_NUMBER_TYPES = [
     'Int8',
     'Int16',
@@ -5315,6 +5432,7 @@ function splitAndTrimWithBracket(input) {
 }
 
 ;// ./utils/query-parser/serializers.ts
+/* unused harmony import specifier */ var serializers_IMPLICIT_FIELD;
 // @ts-ignore: no type declarations for '@hyperdx/lucene'
 function serializers_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
@@ -5363,9 +5481,9 @@ function serializers_define_property(obj, key, value) {
 
 
 
-class serializers_EnglishSerializer {
+class EnglishSerializer {
     translateField(field) {
-        if (field === IMPLICIT_FIELD) {
+        if (field === serializers_IMPLICIT_FIELD) {
             return 'event';
         }
         return `'${field}'`;
@@ -5422,7 +5540,7 @@ class serializers_EnglishSerializer {
     }
     fieldSearch(field, term, isNegatedField, prefixWildcard, suffixWildcard, isPhrase) {
         return serializers_async_to_generator(function*() {
-            if (field === IMPLICIT_FIELD) {
+            if (field === serializers_IMPLICIT_FIELD) {
                 return `${this.translateField(field)} ${prefixWildcard && suffixWildcard ? isNegatedField ? 'does not contain' : 'contains' : prefixWildcard ? isNegatedField ? 'does not end with' : 'ends with' : suffixWildcard ? isNegatedField ? 'does not start with' : 'starts with' : isNegatedField ? 'does not have whole word' : 'has whole word'} ${term}`;
             }
             return `${this.translateField(field)} ${isNegatedField ? 'does not contain' : 'contains'} ${term}`;
@@ -5581,7 +5699,7 @@ class SQLSerializer {
     }
     fieldSearch(field, term, isNegatedField, prefixWildcard, suffixWildcard, isPhrase) {
         return serializers_async_to_generator(function*() {
-            const isImplicitField = field === constants_IMPLICIT_FIELD;
+            const isImplicitField = field === IMPLICIT_FIELD;
             const { column, found, propertyType, supportsTextSearch, sourceColumn, implicitTargets } = yield this.getColumnForField(field);
             if (!found) {
                 return this.NOT_FOUND_QUERY;
@@ -5876,7 +5994,8 @@ class CustomSchemaSQLSerializerV2 extends SQLSerializer {
     }
     getColumnForField(field) {
         return serializers_async_to_generator(function*() {
-            if (field === constants_IMPLICIT_FIELD) {
+            var _convertCHTypeToPrimitiveJSType;
+            if (field === IMPLICIT_FIELD) {
                 if (!this.implicitColumnExpression) {
                     throw new Error('Can not search bare text without an implicit column set.');
                 }
@@ -5887,8 +6006,8 @@ class CustomSchemaSQLSerializerV2 extends SQLSerializer {
                 }, []).filter((name)=>!!name)));
                 const implicitTargets = (yield Promise.all(implicitFieldCandidates.map((candidate)=>serializers_async_to_generator(function*() {
                         try {
+                            var _convertCHTypeToPrimitiveJSType, _candidateExpression_sourceColumn;
                             const candidateExpression = yield this.buildColumnExpressionFromField(candidate);
-                            var _convertCHTypeToPrimitiveJSType;
                             const candidatePropertyType = (_convertCHTypeToPrimitiveJSType = convertCHTypeToPrimitiveJSType(candidateExpression.columnType)) !== null && _convertCHTypeToPrimitiveJSType !== void 0 ? _convertCHTypeToPrimitiveJSType : undefined;
                             let candidateSupportsTextSearch;
                             if ((candidatePropertyType === JSDataType.String || candidatePropertyType === JSDataType.JSON) && candidateExpression.sourceColumn && candidateExpression.columnExpression === candidateExpression.sourceColumn) {
@@ -5896,7 +6015,6 @@ class CustomSchemaSQLSerializerV2 extends SQLSerializer {
                             } else if (candidatePropertyType === JSDataType.String || candidatePropertyType === JSDataType.JSON) {
                                 candidateSupportsTextSearch = false;
                             }
-                            var _candidateExpression_sourceColumn;
                             return {
                                 column: candidateExpression.columnExpression,
                                 sourceColumn: (_candidateExpression_sourceColumn = candidateExpression.sourceColumn) !== null && _candidateExpression_sourceColumn !== void 0 ? _candidateExpression_sourceColumn : candidate,
@@ -5918,7 +6036,6 @@ class CustomSchemaSQLSerializerV2 extends SQLSerializer {
                 };
             }
             const expression = yield this.buildColumnExpressionFromField(field);
-            var _convertCHTypeToPrimitiveJSType;
             const propertyType = (_convertCHTypeToPrimitiveJSType = convertCHTypeToPrimitiveJSType(expression.columnType)) !== null && _convertCHTypeToPrimitiveJSType !== void 0 ? _convertCHTypeToPrimitiveJSType : undefined;
             let supportsTextSearch;
             if ((propertyType === JSDataType.String || propertyType === JSDataType.JSON) && expression.sourceColumn && expression.columnExpression === expression.sourceColumn) {
@@ -5956,7 +6073,7 @@ class CustomSchemaSQLSerializerV2 extends SQLSerializer {
 }
 
 ;// ./utils/query-parser/ast.ts
-// @ts-ignore: no type declarations for '@hyperdx/lucene'
+/* unused harmony import specifier */ var ast_EnglishSerializer;
 function ast_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -5986,18 +6103,19 @@ function ast_async_to_generator(fn) {
         });
     };
 }
+// @ts-ignore: no type declarations for '@hyperdx/lucene'
 
 
 
 
-function ast_parse(query) {
+function parse(query) {
     return lucene.parse(encodeSpecialTokens(query));
 }
 function nodeTerm(node, serializer) {
     return ast_async_to_generator(function*() {
         const field = node.field[0] === '-' ? node.field.slice(1) : node.field;
         let isNegatedField = node.field[0] === '-';
-        const isImplicitField = node.field === constants_IMPLICIT_FIELD;
+        const isImplicitField = node.field === IMPLICIT_FIELD;
         if (node.term != null) {
             const nodeTermInstance = node;
             let term = decodeSpecialTokens(nodeTermInstance.term);
@@ -6078,7 +6196,7 @@ function serialize(ast, serializer) {
         return '';
     })();
 }
-function ast_genWhereSQL(ast, serializer) {
+function genWhereSQL(ast, serializer) {
     return ast_async_to_generator(function*() {
         return yield serialize(ast, serializer);
     })();
@@ -6086,9 +6204,9 @@ function ast_genWhereSQL(ast, serializer) {
 function genEnglishExplanation(query) {
     return ast_async_to_generator(function*() {
         try {
-            const parsedQ = ast_parse(query);
+            const parsedQ = parse(query);
             if (parsedQ) {
-                const serializer = new EnglishSerializer();
+                const serializer = new ast_EnglishSerializer();
                 return yield serialize(parsedQ, serializer);
             }
         } catch (e) {
@@ -6099,6 +6217,8 @@ function genEnglishExplanation(query) {
 }
 
 ;// ./utils/query-parser/query-parser.ts
+/* unused harmony import specifier */ var query_parser_parse;
+/* unused harmony import specifier */ var query_parser_genWhereSQL;
 function query_parser_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -6157,8 +6277,8 @@ class SearchQueryBuilder {
             if (!this.searchQ) {
                 return '';
             }
-            const parsedQ = parse(this.searchQ);
-            return yield genWhereSQL(parsedQ, this.serializer);
+            const parsedQ = query_parser_parse(this.searchQ);
+            return yield query_parser_genWhereSQL(parsedQ, this.serializer);
         }).call(this);
     }
     and(condition) {
@@ -6231,8 +6351,8 @@ function getWhereSQLViaLucene(_0) {
             datasourceType
         });
         try {
-            const ast = ast_parse(trimmedQuery);
-            const whereSQL = yield ast_genWhereSQL(ast, serializer);
+            const ast = parse(trimmedQuery);
+            const whereSQL = yield genWhereSQL(ast, serializer);
             console.log({
                 query,
                 whereSQL
@@ -6296,10 +6416,9 @@ function useLuceneWhereClause() {
                 return '';
             }
             const candidateFieldNames = (tableFields || []).map((field)=>{
-                var _field_Field, _ref;
-                const rawName = (_ref = (_field_Field = field === null || field === void 0 ? void 0 : field.Field) !== null && _field_Field !== void 0 ? _field_Field : field === null || field === void 0 ? void 0 : field.value) !== null && _ref !== void 0 ? _ref : field === null || field === void 0 ? void 0 : field.name;
-                var _field_Type;
-                const type = String((_field_Type = field === null || field === void 0 ? void 0 : field.Type) !== null && _field_Type !== void 0 ? _field_Type : '').toUpperCase();
+                var _ref, _ref1, _ref2;
+                const rawName = (_ref = (_ref1 = field === null || field === void 0 ? void 0 : field.Field) !== null && _ref1 !== void 0 ? _ref1 : field === null || field === void 0 ? void 0 : field.value) !== null && _ref !== void 0 ? _ref : field === null || field === void 0 ? void 0 : field.name;
+                const type = String((_ref2 = field === null || field === void 0 ? void 0 : field.Type) !== null && _ref2 !== void 0 ? _ref2 : '').toUpperCase();
                 if (!rawName) {
                     return null;
                 }
@@ -6428,6 +6547,8 @@ function useDiscoverData_object_spread_props(target, source) {
 
 
 function useDiscoverData() {
+    const didRunPageEffect = (0,external_react_.useRef)(false);
+    const didRunAutoRefreshEffect = (0,external_react_.useRef)(false);
     const [page, setPage] = (0,react/* useAtom */.fp)(discover/* pageAtom */.fs);
     const pageSize = (0,react/* useAtomValue */.md)(discover/* pageSizeAtom */.Ol);
     const setTableData = (0,react/* useSetAtom */.Xr)(discover/* tableDataAtom */.q3);
@@ -6913,6 +7034,10 @@ function useDiscoverData() {
         refreshData
     ]);
     (0,external_react_.useEffect)(()=>{
+        if (!didRunPageEffect.current) {
+            didRunPageEffect.current = true;
+            return;
+        }
         if (!currentTimeField) {
             return;
         }
@@ -6922,10 +7047,13 @@ function useDiscoverData() {
         void getTableDataCount();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
-        currentTimeField,
         page
     ]);
     (0,external_react_.useEffect)(()=>{
+        if (!didRunAutoRefreshEffect.current) {
+            didRunAutoRefreshEffect.current = true;
+            return;
+        }
         refreshData({
             skipPageReset: false
         });
@@ -7017,7 +7145,7 @@ function PageDiscover() {
 }
 
 
-/***/ })
+/***/ }
 
 }]);
-//# sourceMappingURL=285.js.map?_cache=b373d6c4ccbf93081e71
+//# sourceMappingURL=285.js.map?_cache=a78cb7aa561329aaefa0
