@@ -1,12 +1,14 @@
 "use strict";
 (self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[170],{
 
-/***/ 202:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 202
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */   DEFAULT_LOGS_CONFIG: () => (/* reexport safe */ _types_plugin_settings__WEBPACK_IMPORTED_MODULE_10__.T),
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   mergeLogsConfig: () => (/* reexport safe */ _types_plugin_settings__WEBPACK_IMPORTED_MODULE_10__.o)
 /* harmony export */ });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5959);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
@@ -20,10 +22,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__);
 /* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(2007);
 /* harmony import */ var _grafana_ui__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_grafana_ui__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var jotai__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(3689);
-/* harmony import */ var _services_metaservice__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(8161);
-/* harmony import */ var _testIds__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(5611);
-/* harmony import */ var _store_discover__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(6247);
+/* harmony import */ var jotai__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(3689);
+/* harmony import */ var _services_metaservice__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(8161);
+/* harmony import */ var _testIds__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(5611);
+/* harmony import */ var _store_discover__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(6247);
+/* harmony import */ var _types_plugin_settings__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(325);
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -115,6 +118,8 @@ function _object_spread_props(target, source) {
 
 
 
+
+
 const AppConfig = ({ plugin })=>{
     const s = (0,_grafana_ui__WEBPACK_IMPORTED_MODULE_5__.useStyles2)(getStyles);
     const { enabled, pinned, jsonData, secureJsonFields } = plugin.meta;
@@ -123,16 +128,26 @@ const AppConfig = ({ plugin })=>{
         apiKey: '',
         isApiKeySet: Boolean(secureJsonFields === null || secureJsonFields === void 0 ? void 0 : secureJsonFields.apiKey)
     });
-    const logsConfig = (jsonData === null || jsonData === void 0 ? void 0 : jsonData.logsConfig) || {};
+    const logsConfig = (0,_types_plugin_settings__WEBPACK_IMPORTED_MODULE_10__/* .mergeLogsConfig */ .o)(jsonData === null || jsonData === void 0 ? void 0 : jsonData.logsConfig);
     const [currentLogsConfig, setCurrentLogsConfig] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(logsConfig);
-    const [databases, setDatabases] = (0,jotai__WEBPACK_IMPORTED_MODULE_9__/* .useAtom */ .fp)(_store_discover__WEBPACK_IMPORTED_MODULE_8__/* .settingDatabasesAtom */ .AW);
-    const [tables, setTables] = (0,jotai__WEBPACK_IMPORTED_MODULE_9__/* .useAtom */ .fp)(_store_discover__WEBPACK_IMPORTED_MODULE_8__/* .settingTablesAtom */ .L);
+    const [databases, setDatabases] = (0,jotai__WEBPACK_IMPORTED_MODULE_6__/* .useAtom */ .fp)(_store_discover__WEBPACK_IMPORTED_MODULE_9__/* .settingDatabasesAtom */ .AW);
+    const [tables, setTables] = (0,jotai__WEBPACK_IMPORTED_MODULE_6__/* .useAtom */ .fp)(_store_discover__WEBPACK_IMPORTED_MODULE_9__/* .settingTablesAtom */ .L);
     const isSubmitDisabled = Boolean(!state.apiUrl || !state.isApiKeySet && !state.apiKey);
-    const fetchDatabases = react__WEBPACK_IMPORTED_MODULE_0___default().useCallback((ds)=>{
+    const resolveDatasource = react__WEBPACK_IMPORTED_MODULE_0___default().useCallback((ds)=>{
         if (!ds) {
             return undefined;
         }
-        return (0,_services_metaservice__WEBPACK_IMPORTED_MODULE_6__/* .getDatabases */ .Hm)(ds).subscribe({
+        if (typeof ds === 'string') {
+            return (0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__.getDataSourceSrv)().getList().find((item)=>item.uid === ds || item.name === ds);
+        }
+        return ds;
+    }, []);
+    const fetchDatabases = react__WEBPACK_IMPORTED_MODULE_0___default().useCallback((ds)=>{
+        const datasourceRef = resolveDatasource(ds);
+        if (!datasourceRef) {
+            return undefined;
+        }
+        return (0,_services_metaservice__WEBPACK_IMPORTED_MODULE_7__/* .getDatabases */ .Hm)(datasourceRef).subscribe({
             next: (resp)=>{
                 const { data, ok } = resp;
                 if (ok) {
@@ -148,14 +163,19 @@ const AppConfig = ({ plugin })=>{
             error: (err)=>console.log('Fetch Error', err)
         });
     }, [
-        setDatabases
+        setDatabases,
+        resolveDatasource
     ]);
     const fetchTables = react__WEBPACK_IMPORTED_MODULE_0___default().useCallback((db)=>{
+        const datasourceRef = resolveDatasource(currentLogsConfig.datasource);
         if (!db) {
             return undefined;
         }
-        return (0,_services_metaservice__WEBPACK_IMPORTED_MODULE_6__/* .getTablesService */ .Rw)({
-            selectdbDS: currentLogsConfig.datasource,
+        if (!datasourceRef) {
+            return undefined;
+        }
+        return (0,_services_metaservice__WEBPACK_IMPORTED_MODULE_7__/* .getTablesService */ .Rw)({
+            selectdbDS: datasourceRef,
             database: db
         }).subscribe({
             next: (resp)=>{
@@ -174,7 +194,8 @@ const AppConfig = ({ plugin })=>{
         });
     }, [
         setTables,
-        currentLogsConfig.datasource
+        currentLogsConfig.datasource,
+        resolveDatasource
     ]);
     const onResetApiKey = ()=>setState(_object_spread_props(_object_spread({}, state), {
             apiKey: '',
@@ -192,9 +213,9 @@ const AppConfig = ({ plugin })=>{
         updatePluginAndReload(plugin.meta.id, {
             enabled,
             pinned,
-            jsonData: {
+            jsonData: _object_spread_props(_object_spread({}, jsonData), {
                 apiUrl: state.apiUrl
-            },
+            }),
             // This cannot be queried later by the frontend.
             // We don't want to override it in case it was set previously and left untouched now.
             secureJsonData: state.isApiKeySet ? undefined : {
@@ -206,10 +227,10 @@ const AppConfig = ({ plugin })=>{
         updatePluginAndReload(plugin.meta.id, {
             enabled,
             pinned,
-            jsonData: {
+            jsonData: _object_spread_props(_object_spread({}, jsonData), {
                 apiUrl: state.apiUrl,
                 logsConfig: _object_spread({}, currentLogsConfig)
-            },
+            }),
             // This cannot be queried later by the frontend.
             // We don't want to override it in case it was set previously and left untouched now.
             secureJsonData: state.isApiKeySet ? undefined : {
@@ -217,6 +238,17 @@ const AppConfig = ({ plugin })=>{
             }
         });
     };
+    (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(()=>{
+        const datasourceRef = resolveDatasource(currentLogsConfig.datasource);
+        if (datasourceRef && datasourceRef !== currentLogsConfig.datasource) {
+            setCurrentLogsConfig((prev)=>_object_spread_props(_object_spread({}, prev), {
+                    datasource: datasourceRef
+                }));
+        }
+    }, [
+        currentLogsConfig.datasource,
+        resolveDatasource
+    ]);
     (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(()=>{
         if (!currentLogsConfig.datasource) {
             return;
@@ -247,7 +279,7 @@ const AppConfig = ({ plugin })=>{
     }, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_5__.SecretInput, {
         width: 60,
         id: "config-api-key",
-        "data-testid": _testIds__WEBPACK_IMPORTED_MODULE_7__/* .testIds */ .b.appConfig.apiKey,
+        "data-testid": _testIds__WEBPACK_IMPORTED_MODULE_8__/* .testIds */ .b.appConfig.apiKey,
         name: "apiKey",
         value: state.apiKey,
         isConfigured: state.isApiKeySet,
@@ -262,7 +294,7 @@ const AppConfig = ({ plugin })=>{
         width: 60,
         name: "apiUrl",
         id: "config-api-url",
-        "data-testid": _testIds__WEBPACK_IMPORTED_MODULE_7__/* .testIds */ .b.appConfig.apiUrl,
+        "data-testid": _testIds__WEBPACK_IMPORTED_MODULE_8__/* .testIds */ .b.appConfig.apiUrl,
         value: state.apiUrl,
         placeholder: `E.g.: http://mywebsite.com/api/v1`,
         onChange: onChange
@@ -270,7 +302,7 @@ const AppConfig = ({ plugin })=>{
         className: s.marginTop
     }, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(_grafana_ui__WEBPACK_IMPORTED_MODULE_5__.Button, {
         type: "submit",
-        "data-testid": _testIds__WEBPACK_IMPORTED_MODULE_7__/* .testIds */ .b.appConfig.submit,
+        "data-testid": _testIds__WEBPACK_IMPORTED_MODULE_8__/* .testIds */ .b.appConfig.submit,
         disabled: isSubmitDisabled
     }, "Save API settings")))), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement("form", {
         className: s.marginTop,
@@ -360,10 +392,41 @@ const updatePlugin = (pluginId, data)=>_async_to_generator(function*() {
     })();
 
 
-/***/ }),
+/***/ },
 
-/***/ 2351:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ 5611
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   b: () => (/* binding */ testIds)
+/* harmony export */ });
+const testIds = {
+    appConfig: {
+        apiKey: 'data-testid ac-api-key',
+        apiUrl: 'data-testid ac-api-url',
+        submit: 'data-testid ac-submit-form'
+    },
+    pageOne: {
+        container: 'data-testid pg-one-container',
+        navigateToFour: 'data-testid navigate-to-four'
+    },
+    pageTwo: {
+        container: 'data-testid pg-two-container'
+    },
+    pageThree: {
+        container: 'data-testid pg-three-container'
+    },
+    pageFour: {
+        container: 'data-testid pg-four-container',
+        navigateBack: 'data-testid navigate-back'
+    }
+};
+
+
+/***/ },
+
+/***/ 2351
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 
 // EXPORTS
@@ -384,6 +447,7 @@ const plugin_namespaceObject = {};
 // EXTERNAL MODULE: ../node_modules/lodash-es/groupBy.js + 4 modules
 var groupBy = __webpack_require__(35);
 ;// ./constants.ts
+/* unused harmony import specifier */ var pluginJson;
 
 
 const PLUGIN_BASE_URL = (/* unused pure expression or super */ null && (`/a/${pluginJson.id}`));
@@ -631,38 +695,7 @@ function translationDateIntervalType(type) {
 }
 
 
-/***/ }),
-
-/***/ 5611:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   b: () => (/* binding */ testIds)
-/* harmony export */ });
-const testIds = {
-    appConfig: {
-        apiKey: 'data-testid ac-api-key',
-        apiUrl: 'data-testid ac-api-url',
-        submit: 'data-testid ac-submit-form'
-    },
-    pageOne: {
-        container: 'data-testid pg-one-container',
-        navigateToFour: 'data-testid navigate-to-four'
-    },
-    pageTwo: {
-        container: 'data-testid pg-two-container'
-    },
-    pageThree: {
-        container: 'data-testid pg-three-container'
-    },
-    pageFour: {
-        container: 'data-testid pg-four-container',
-        navigateBack: 'data-testid navigate-back'
-    }
-};
-
-
-/***/ })
+/***/ }
 
 }]);
-//# sourceMappingURL=170.js.map?_cache=f7d774b41633ef0cb3b9
+//# sourceMappingURL=170.js.map?_cache=aaddab54105ad46e9040

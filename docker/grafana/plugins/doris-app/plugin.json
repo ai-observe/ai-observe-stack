@@ -4,7 +4,6 @@
     "name": "Doris App",
     "id": "doris-app",
     "backend": false,
-    "executable": "gpx_doris-app",
     "info": {
         "keywords": [
             "app"
@@ -17,9 +16,14 @@
             "small": "img/logo.svg",
             "large": "img/logo.svg"
         },
-        "screenshots": [],
-        "version": "1.0.1",
-        "updated": "2026-02-28"
+        "screenshots": [
+            {
+                "name": "Discover",
+                "path": "img/doris-app.png"
+            }
+        ],
+        "version": "1.0.3",
+        "updated": "2026-03-08"
     },
     "includes": [
         {
