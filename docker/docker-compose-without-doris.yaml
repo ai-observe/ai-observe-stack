@@ -56,11 +56,11 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
       - GF_LOG_LEVEL=info
       - GF_FEATURE_TOGGLES_ENABLE=traceQLStreaming metricsSummary
-      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=doris-app
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=velodb-doris-app
       # Anonymous access (read-only)
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
-      - GF_USERS_HOME_PAGE=/a/doris-app/discover
+      - GF_USERS_HOME_PAGE=/a/velodb-doris-app/discover
       # Doris connection for datasource provisioning
       - DORIS_FE_MYSQL_ENDPOINT=${DORIS_FE_MYSQL_ENDPOINT:-host.docker.internal:9030}
       - DORIS_USERNAME=${DORIS_USERNAME:-root}
@@ -74,7 +74,7 @@ services:
       - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
       - ./grafana/provisioning/plugins:/etc/grafana/provisioning/plugins:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - ./grafana/plugins/doris-app:/var/lib/grafana/plugins/doris-app:ro
+      - ./grafana/plugins/velodb-doris-app:/var/lib/grafana/plugins/velodb-doris-app:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:3000/api/health || exit 1"]

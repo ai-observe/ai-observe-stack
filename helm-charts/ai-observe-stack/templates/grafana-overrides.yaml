@@ -112,7 +112,7 @@ spec:
             {{- if .Values.dorisPlugin.enabled }}
             # Allow loading unsigned doris-app plugin
             - name: GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS
-              value: "doris-app"
+              value: "velodb-doris-app"
             {{- end }}
             # Enable feature toggles for tracing
             - name: GF_FEATURE_TOGGLES_ENABLE
