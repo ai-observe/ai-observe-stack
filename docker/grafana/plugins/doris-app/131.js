@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[131],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[131],{
 
 /***/ 6472
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -12,6 +12,11 @@
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(7045);
 /* harmony import */ var rxjs_operators__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7708);
 /* harmony import */ var antd__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4749);
+/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8531);
+/* harmony import */ var _grafana_runtime__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _utils_errors__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9071);
+
+
 
 
 
@@ -41,7 +46,9 @@ function withErrorHandler(source$, options) {
         }
         return res;
     }), (0,rxjs_operators__WEBPACK_IMPORTED_MODULE_1__/* .catchError */ .W)((err)=>{
-        console.log('error catch', err);
+        (0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_5__/* .toError */ .i)(err), {
+            source: 'withErrorHandler'
+        });
         showGlobalError(getErrorText(err));
         return (0,rxjs__WEBPACK_IMPORTED_MODULE_0__.throwError)(()=>err);
     }));
@@ -69,6 +76,7 @@ function withErrorHandler(source$, options) {
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(1269);
 /* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(rxjs__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _components_with_error_handler_withErrorHandler__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6472);
+/* harmony import */ var _utils_errors__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9071);
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -150,6 +158,7 @@ function _object_spread_props(target, source) {
     }
     return target;
 }
+
 
 
 
@@ -296,7 +305,10 @@ LIMIT 1;
                 normalizedType
             });
         } catch (error) {
-            console.error('Failed to fetch column metadata', error);
+            (0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_1__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_4__/* .toError */ .i)(error), {
+                source: 'metaservice',
+                action: 'getColumnInfo'
+            });
             return null;
         }
     }).apply(this, arguments);
@@ -360,7 +372,10 @@ function getInvertedIndexColumns(_0) {
             }
             return Array.from(indexedColumns);
         } catch (error) {
-            console.error('Failed to fetch inverted index metadata', error);
+            (0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_1__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_4__/* .toError */ .i)(error), {
+                source: 'metaservice',
+                action: 'getInvertedIndexColumns'
+            });
             return [];
         }
     }).apply(this, arguments);
@@ -1355,9 +1370,7 @@ function convertColumnToRow(frame) {
                 // 如果是 VARIANT 类型，转换为 JSON 对象
                 try {
                     row[fieldNames[j]] = JSON.parse(row[fieldNames[j]]);
-                } catch (e) {
-                    console.error(`Error parsing VARIANT field ${fieldNames[j]}:`, e);
-                }
+                } catch (unused) {}
             }
         }
         rows.push(row);
@@ -1387,9 +1400,7 @@ function convertColumnToRowViaFieldsType(frame, fields) {
             if (currentFieldInfo && currentFieldInfo.Type.toUpperCase() === 'VARIANT') {
                 try {
                     row[fieldNames[j]] = JSON.parse(row[fieldNames[j]]);
-                } catch (e) {
-                    console.error(`Error parsing VARIANT field ${fieldNames[j]}:`, e);
-                }
+                } catch (unused) {}
             }
         }
         rows.push(row);
@@ -1430,10 +1441,7 @@ function formatTracesResData(frame) {
                 f.values = f.values.map((item)=>JSON.parse(item));
             }
         });
-    } catch (err) {
-        console.log('err:', err);
-    }
-    console.log('traceDataFrame', traceDataFrame);
+    } catch (unused) {}
     return traceDataFrame;
 }
 function getSearchTableData(tokenizeFields, tableResult) {
@@ -1456,10 +1464,6 @@ function parseKeywords(keyword) {
     }
     return keyword;
 }
-function highlightDelimiter(inputStr, delimiter) {
-    const highlighted = inputStr.replace(new RegExp(`${delimiter}`, 'g'), `<mark>${delimiter}</mark>`);
-    return highlighted;
-}
 function insertUnderscore(arr) {
     return arr.reduce((result, item, index)=>{
         result.push(item);
@@ -1469,13 +1473,6 @@ function insertUnderscore(arr) {
         return result;
     }, []);
 }
-function compare_ignore_quotes(s1, s2) {
-    // 移除双引号和单引号
-    const cleanS1 = s1.replace(/['"]/g, '');
-    const cleanS2 = s2.replace(/['"]/g, '');
-    // 比较
-    return cleanS1 === cleanS2;
-}
 function generateHighlightedResults(data, result) {
     const keyword = data.search_value || '';
     const searchTableData = getSearchTableData(data.indexes, result);
@@ -1483,10 +1480,6 @@ function generateHighlightedResults(data, result) {
     // even when `indexes` (tokenizeFields) is empty. Example: "service_name:frontend"
     const luceneFieldMatch = keyword && keyword.match(/^\s*([^\s:]+)\s*:/);
     const luceneField = luceneFieldMatch ? luceneFieldMatch[1].replace(/['"]+/g, '') : null;
-    const keywordsTokens = (0,lodash_es__WEBPACK_IMPORTED_MODULE_2__/* ["default"] */ .A)(Array.from(js_tokens__WEBPACK_IMPORTED_MODULE_7___default()(keyword)).filter((item)=>item.type !== 'Punctuator').map((item)=>{
-        let res = item.value.toLowerCase();
-        return item.value.includes('_') ? item.value.split('_').map((str)=>str.toLowerCase()) : res;
-    }));
     const _sourceResult = result.map((item)=>{
         let itemSource = '';
         for(const key in item){
@@ -1562,7 +1555,32 @@ const QUERY_TRACE_FIELDS = (/* unused pure expression or super */ null && ([
 ]));
 
 
+/***/ },
+
+/***/ 9071
+(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   i: () => (/* binding */ toError)
+/* harmony export */ });
+function toError(value) {
+    if (value instanceof Error) {
+        return value;
+    }
+    if (typeof value === 'string') {
+        return new Error(value);
+    }
+    if (value && typeof value === 'object') {
+        const maybeMessage = value.message;
+        if (typeof maybeMessage === 'string' && maybeMessage.trim().length > 0) {
+            return new Error(maybeMessage);
+        }
+    }
+    return new Error('Unknown error');
+}
+
+
 /***/ }
 
 }]);
-//# sourceMappingURL=131.js.map?_cache=641cdf0dac6d01e7cb53
+//# sourceMappingURL=131.js.map?_cache=2e7f1aae0c477f38b4b8

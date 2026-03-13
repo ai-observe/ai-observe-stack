@@ -189,7 +189,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__1269__;
 /******/ 		// This function allow to reference async chunks
 /******/ 		__webpack_require__.u = (chunkId) => {
 /******/ 			// return url for filenames based on template
-/******/ 			return "" + chunkId + ".js?_cache=" + {"35":"337ae006bf340a0e3533","51":"c105fef5bee05190fb19","131":"641cdf0dac6d01e7cb53","170":"aaddab54105ad46e9040","285":"a78cb7aa561329aaefa0","321":"d9c519e80e3c1743cc02","377":"6dbf11bdc671fe0b31db","462":"a08b30d94577ffd02f77","600":"6eb5b58c884a80eedfb6","608":"293d5cdc44f03ffd0f7e"}[chunkId] + "";
+/******/ 			return "" + chunkId + ".js?_cache=" + {"35":"fd7e98e8788aa1c2d01f","51":"842534bcdc6a7a7e9a0f","131":"2e7f1aae0c477f38b4b8","170":"0af4d6d7753bcb84128f","285":"78aad12c01b5e573affd","321":"daee472564c195446faf","377":"8207239e6f957f3fa7e3","462":"30a4da35981c970a4eee","600":"b936f1dc3baec3e6a6a4","606":"c59e1b952839da1bce9f","608":"6811c708c523e3b55ad5"}[chunkId] + "";
 /******/ 		};
 /******/ 	})();
 /******/ 	
@@ -213,7 +213,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__1269__;
 /******/ 	/* webpack/runtime/load script */
 /******/ 	(() => {
 /******/ 		var inProgress = {};
-/******/ 		var dataWebpackPrefix = "doris-app:";
+/******/ 		var dataWebpackPrefix = "velodb-doris-app:";
 /******/ 		// loadScript function to load a script via script tag
 /******/ 		__webpack_require__.l = (url, done, key, chunkId) => {
 /******/ 			if(inProgress[url]) { inProgress[url].push(done); return; }
@@ -273,12 +273,12 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__1269__;
 /******/ 	
 /******/ 	/* webpack/runtime/publicPath */
 /******/ 	(() => {
-/******/ 		__webpack_require__.p = "public/plugins/doris-app/";
+/******/ 		__webpack_require__.p = "public/plugins/velodb-doris-app/";
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
-/******/ 	__webpack_require__.sriHashes = {"35":"sha256-geokTZ3H5RVVlgXxtyLhI5E1a3wQC935KFGLiE8iY40=","51":"sha256-6qTLnqHc0wGd7byl8wmQjqBWjhPOxWyk5K6Is0FMCtI=","131":"sha256-Dgg2QvGzJ02pR7LbooV7fMFSgASasayZYCNJnO7+UzQ=","170":"sha256-1ePB3jm9BIfHzsA7GiJBH6HnGu44Ebn7KpNtmalaAIA=","285":"sha256-VtWE88zDDWbB+l2/Z+zCwFpo1SOZ3vi05qPpPkhKLSg=","321":"sha256-cpj30Hf/6Dw6jGKCV2TnGZI58ETmUbF4SWykYqrnr4g=","377":"sha256-+DkuLcM4NEhoaEvw64eBukLMBiXkphC0J9ikF3t2v1M=","462":"sha256-cgxWk21n/2maQyHpzu9LiwbdAvxsz0h9G/TwFvnQuFg=","600":"sha256-IXCMPlxg5BfCXH+QMoPAv7KT4Cz0wbUQ/6BTVD6ogSs=","608":"sha256-1prFBYCEc2EVbB/tQL2nAyp1KF7ewQe0YiEyJc2V6Po="};
+/******/ 	__webpack_require__.sriHashes = {"35":"sha256-ZL73rrEaucy2/Xb0XLDm7vvqzvFbq+4oz1kFGgNZql0=","51":"sha256-SWmeqh//8BZBsPKwwQ/mPmtzdj0+CIjaDNXeEW2lFN4=","131":"sha256-10gziSF/4NkYWP6fEqNvVAb1yKNd4NQ5HVoNbQ7JR5Y=","170":"sha256-YwTVwe4LBQkHCDt+gn+Dr7kp1eChhwEBXSGi/pjqCI0=","285":"sha256-8Tn5eLvsqUK4Rh5L2EUEPfV/PYNLFoqTzEy1DDNfNto=","321":"sha256-ofqS1kEcHLdK0eB2PWdIL0v+yiF2Xd2QtlKZHjm0Y9E=","377":"sha256-S/wllxGTqyN6P1PCIpERWbuxGHlFeLxT0YRdZ2H71ac=","462":"sha256-tT7UFxQkLx/XswqsX2lgxjVjemMUePjADVoKa6REZ4M=","600":"sha256-hmN80FEnXeG2LgwCvScBOPGS8Mt2EQyBaXi+KbWSnLM=","606":"sha256-gLBboRxsHxjvmRpNBBgM1ZhMAcVZg/a2l0d2Ed5fbOY=","608":"sha256-8KeMYVHUX7+asj5sPZLgr4gqMQjTdx2/usgthalkplw="};
 /******/ 	
 /******/ 	/* webpack/runtime/jsonp chunk loading */
 /******/ 	(() => {
@@ -365,7 +365,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE__1269__;
 /******/ 		
 /******/ 		}
 /******/ 		
-/******/ 		var chunkLoadingGlobal = self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || [];
+/******/ 		var chunkLoadingGlobal = self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || [];
 /******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
 /******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
 /******/ 	})();
@@ -393,7 +393,7 @@ var external_module_default = /*#__PURE__*/__webpack_require__.n(external_module
 __webpack_require__.p =
   (external_module_default()) && (external_module_default()).uri
     ? external_module_default().uri.slice(0, external_module_default().uri.lastIndexOf('/') + 1)
-    : 'public/plugins/doris-app/';
+    : 'public/plugins/velodb-doris-app/';
 
 // EXTERNAL MODULE: external "react"
 var external_react_ = __webpack_require__(5959);

@@ -1,4 +1,4 @@
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[377],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[377],{
 
 /***/ 9328
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -16766,4 +16766,4 @@ function __rewriteRelativeImportExtension(path, preserveJsx) {
 /***/ }
 
 }]);
-//# sourceMappingURL=377.js.map?_cache=6dbf11bdc671fe0b31db
+//# sourceMappingURL=377.js.map?_cache=8207239e6f957f3fa7e3

@@ -2,13 +2,13 @@
     "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
     "type": "app",
     "name": "Doris App",
-    "id": "doris-app",
+    "id": "velodb-doris-app",
     "backend": false,
     "info": {
         "keywords": [
             "app"
         ],
-        "description": "",
+        "description": "Grafana Doris App provides a seamless interface for the Apache Doris observability storage backend. It delivers a Kibana-like search experience supporting both Lucene and SQL syntax, alongside powerful log-trace correlation. Additionally, it features native trace exploration—reminiscent of Jaeger—allowing users to filter, locate, and visualize traces in intuitive waterfall views.",
         "author": {
             "name": "VeloDB"
         },
@@ -22,21 +22,28 @@
                 "path": "img/doris-app.png"
             }
         ],
-        "version": "1.0.3",
-        "updated": "2026-03-08"
+        "version": "1.0.5",
+        "updated": "2026-03-12"
     },
     "includes": [
         {
             "type": "page",
             "name": "Discover",
-            "path": "/a/doris-app/discover",
+            "path": "/a/velodb-doris-app/discover",
             "addToNav": true,
             "defaultNav": false
         },
         {
             "type": "page",
             "name": "Traces",
-            "path": "/a/doris-app/traces",
+            "path": "/a/velodb-doris-app/traces",
+            "addToNav": true,
+            "defaultNav": false
+        },
+        {
+            "type": "page",
+            "name": "Dashboard",
+            "path": "/dashboards",
             "addToNav": true,
             "defaultNav": false
         },
@@ -44,7 +51,7 @@
             "type": "page",
             "icon": "cog",
             "name": "Configuration",
-            "path": "/plugins/doris-app",
+            "path": "/plugins/velodb-doris-app",
             "role": "Admin",
             "addToNav": true
         }

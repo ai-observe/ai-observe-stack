@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[51],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[51],{
 
 /***/ 1885
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -20,6 +20,7 @@
 /* harmony import */ var _store_discover__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6247);
 /* harmony import */ var _store_traces__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(3982);
 /* harmony import */ var _utils_data__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(6700);
+/* harmony import */ var _utils_errors__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(9071);
 function _define_property(obj, key, value) {
     if (key in obj) {
         Object.defineProperty(obj, key, {
@@ -48,6 +49,7 @@ function _object_spread(target) {
     }
     return target;
 }
+
 
 
 
@@ -89,7 +91,10 @@ function TraceDetail(props) {
             },
             error: (err)=>{
                 setLoading(false);
-                console.log('Fetch Error', err);
+                (0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_1__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_9__/* .toError */ .i)(err), {
+                    source: 'TraceDetail',
+                    action: 'getTraceData'
+                });
             }
         });
     }, [
@@ -928,4 +933,4 @@ function trimSpacesAroundEquals(str) {
 /***/ }
 
 }]);
-//# sourceMappingURL=51.js.map?_cache=c105fef5bee05190fb19
+//# sourceMappingURL=51.js.map?_cache=842534bcdc6a7a7e9a0f

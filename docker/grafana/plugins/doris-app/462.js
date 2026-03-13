@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[462],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[462],{
 
 /***/ 462
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -18,7 +18,7 @@ __webpack_require__.r(__webpack_exports__);
 
 const Discover = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(608), __webpack_require__.e(321), __webpack_require__.e(131), __webpack_require__.e(51), __webpack_require__.e(285)]).then(__webpack_require__.bind(__webpack_require__, 9285)));
 const PageTrace = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(608), __webpack_require__.e(131), __webpack_require__.e(51), __webpack_require__.e(600)]).then(__webpack_require__.bind(__webpack_require__, 2600)));
-// const PageDashboard = React.lazy(() => import('../../pages/PageDashboard'));
+const PageDashboard = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>__webpack_require__.e(/* import() */ 606).then(__webpack_require__.bind(__webpack_require__, 4606)));
 function App(_props) {
     return /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Routes, null, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
         path: _constants__WEBPACK_IMPORTED_MODULE_2__/* .ROUTES */ .bw.Discover,
@@ -26,6 +26,9 @@ function App(_props) {
     }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
         path: `${_constants__WEBPACK_IMPORTED_MODULE_2__/* .ROUTES */ .bw.Traces}`,
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(PageTrace, null)
+    }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
+        path: `${_constants__WEBPACK_IMPORTED_MODULE_2__/* .ROUTES */ .bw.Dashboard}`,
+        element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(PageDashboard, null)
     }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
         path: "*",
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Discover, null)
@@ -309,4 +312,4 @@ function translationDateIntervalType(type) {
 /***/ }
 
 }]);
-//# sourceMappingURL=462.js.map?_cache=a08b30d94577ffd02f77
+//# sourceMappingURL=462.js.map?_cache=30a4da35981c970a4eee

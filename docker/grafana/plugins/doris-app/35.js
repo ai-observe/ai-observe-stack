@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[35],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[35],{
 
 /***/ 9823
 (__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
@@ -4029,4 +4029,4 @@ function keys(object) {
 /***/ }
 
 }]);
-//# sourceMappingURL=35.js.map?_cache=337ae006bf340a0e3533
+//# sourceMappingURL=35.js.map?_cache=fd7e98e8788aa1c2d01f

@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[600],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[600],{
 
 /***/ 2600
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -252,7 +252,8 @@ function SearchSidebar(props) {
             title: /*#__PURE__*/ external_react_default().createElement("div", null, "Filter traces using ", /*#__PURE__*/ external_react_default().createElement("a", {
                 className: (0,css_.css)`font-weight:500px;color:#3D71D9;`,
                 href: "https://brandur.org/logfmt",
-                target: "_blank"
+                target: "_blank",
+                rel: "noreferrer"
             }, "logfmt"), " syntax:", /*#__PURE__*/ external_react_default().createElement("br", null), /*#__PURE__*/ external_react_default().createElement("ul", {
                 className: (0,css_.css)`list-style-type: disc;list-style-position: inside;`
             }, /*#__PURE__*/ external_react_default().createElement("li", null, "Equality: http.status_code=200"), /*#__PURE__*/ external_react_default().createElement("li", null, "Inequality: error!=true"), /*#__PURE__*/ external_react_default().createElement("li", null, 'Contains: message~="timeout"'), /*#__PURE__*/ external_react_default().createElement("li", null, "Multiple (AND): method=POST duration>1000"), /*#__PURE__*/ external_react_default().createElement("li", null, "OR conditions: error=true OR status>=500")))
@@ -271,9 +272,8 @@ function SearchSidebar(props) {
         className: "mt-1",
         value: tags,
         onChange: (e)=>{
-            var _e_target, _e_target1;
-            console.log((_e_target = e.target) === null || _e_target === void 0 ? void 0 : _e_target.value);
-            const value = (0,utils/* trimSpacesAroundEquals */.gw)((_e_target1 = e.target) === null || _e_target1 === void 0 ? void 0 : _e_target1.value);
+            var _e_target;
+            const value = (0,utils/* trimSpacesAroundEquals */.gw)((_e_target = e.target) === null || _e_target === void 0 ? void 0 : _e_target.value);
             setTags(value);
         }
     }))), /*#__PURE__*/ external_react_default().createElement("div", {
@@ -613,6 +613,7 @@ const TraceView = /*#__PURE__*/ external_react_default().memo(({ traces: propTra
         traceId: traceId
     }));
 });
+TraceView.displayName = 'TraceView';
 
 // EXTERNAL MODULE: ../node_modules/dayjs/dayjs.min.js
 var dayjs_min = __webpack_require__(5285);
@@ -682,6 +683,8 @@ var utils_data = __webpack_require__(6700);
 var constants = __webpack_require__(2351);
 // EXTERNAL MODULE: ./services/metaservice.ts
 var metaservice = __webpack_require__(8161);
+// EXTERNAL MODULE: ./utils/errors.ts
+var errors = __webpack_require__(9071);
 ;// ./components/traces/traces-header/index.tsx
 'use client';
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -854,7 +857,10 @@ function TracesHeader() {
                     setDatabases(options);
                 }
             },
-            error: (err)=>console.log('Fetch Error', err)
+            error: (err)=>(0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'TracesHeader',
+                    action: 'fetchDatabases'
+                })
         });
     }, [
         setDatabases
@@ -903,7 +909,6 @@ function TracesHeader() {
             next: ({ data, ok })=>{
                 if (ok) {
                     const frame = (0,data_.toDataFrame)(data.results.getFields.frames[0]);
-                    console.log('frame', frame);
                     const values = Array.from(frame.fields[0].values);
                     const fieldTypes = Array.from(frame.fields[1].values);
                     const tableFields = values.map((item, index)=>{
@@ -938,7 +943,10 @@ function TracesHeader() {
                 }
             },
             error: (err)=>{
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'TracesHeader',
+                    action: 'getFields'
+                });
             }
         });
     }
@@ -980,7 +988,10 @@ function TracesHeader() {
                 }
             },
             error: (err)=>{
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'TracesHeader',
+                    action: 'getIndexes'
+                });
             }
         });
     }
@@ -1049,10 +1060,16 @@ function TracesHeader() {
                             }
                         }
                     },
-                    error: (err)=>console.log('Fetch Error', err)
+                    error: (err)=>(0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                            source: 'TracesHeader',
+                            action: 'getTables'
+                        })
                 });
             } catch (error) {
-                console.error('Failed to initialize trace defaults from plugin config', error);
+                (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                    source: 'TracesHeader',
+                    action: 'initHeaderData'
+                });
             }
         })();
     }
@@ -1080,7 +1097,6 @@ function TracesHeader() {
         noDefault: true,
         filter: (ds)=>ds.type === 'mysql',
         onChange: (item)=>{
-            console.log('item', item);
             setSelectedDatasource(item);
         }
     })), /*#__PURE__*/ external_react_default().createElement(ui_.Field, {
@@ -1112,7 +1128,10 @@ function TracesHeader() {
                         setTables(options);
                     }
                 },
-                error: (err)=>console.log('Fetch Error', err)
+                error: (err)=>(0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'TracesHeader',
+                        action: 'getTables'
+                    })
             });
         }
     })), /*#__PURE__*/ external_react_default().createElement(ui_.Field, {
@@ -1248,6 +1267,7 @@ function PageTrace_object_spread_props(target, source) {
 
 
 
+
 function PageTrace() {
     const theme = (0,ui_.useTheme2)();
     const currentTimeField = (0,react/* useAtomValue */.md)(discover/* currentTimeFieldAtom */.CA);
@@ -1289,11 +1309,9 @@ function PageTrace() {
             sortBy: sort
         };
         if (minDuration) {
-            console.log('minDuration', minDuration);
             payload.minDuration = minDuration;
         }
         if (maxDuration) {
-            console.log('maxDuration', maxDuration);
             payload.maxDuration = maxDuration;
         }
         if (tags && tags.length > 0) {
@@ -1306,7 +1324,6 @@ function PageTrace() {
                 setLoading(false);
                 if (ok) {
                     const rowsData = (0,utils_data/* convertColumnToRow */.HL)(data.results.getTraces.frames[0]);
-                    // console.log('查询结果', rowsData);
                     const formateData = rowsData.map((item)=>{
                         var _item_trace_duration_ms;
                         return PageTrace_object_spread_props(PageTrace_object_spread({}, item), {
@@ -1318,7 +1335,10 @@ function PageTrace() {
             },
             error: (err)=>{
                 setLoading(false);
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'PageTrace',
+                    action: 'getTraces'
+                });
             }
         });
     }, [
@@ -1376,7 +1396,10 @@ function PageTrace() {
             },
             error: (err)=>{
                 setLoading(false);
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'PageTrace',
+                    action: 'getTracesServices'
+                });
             }
         });
     }, [
@@ -1430,7 +1453,10 @@ function PageTrace() {
             },
             error: (err)=>{
                 setLoading(false);
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'PageTrace',
+                    action: 'getTracesOperations'
+                });
             }
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1542,4 +1568,4 @@ function PageTrace() {
 /***/ }
 
 }]);
-//# sourceMappingURL=600.js.map?_cache=6eb5b58c884a80eedfb6
+//# sourceMappingURL=600.js.map?_cache=b936f1dc3baec3e6a6a4

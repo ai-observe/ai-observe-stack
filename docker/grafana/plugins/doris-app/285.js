@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[285],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[285],{
 
 /***/ 5611
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -418,8 +418,6 @@ function FilterContent({ onHide, dataFilterValue }) {
     };
     function renderFiledComponent() {
         // const currentField = field.value;
-        // console.log(operator);
-        console.log(operator);
         const currentOperator = typeof operator === 'string' ? operator : operator === null || operator === void 0 ? void 0 : operator.value;
         if (currentOperator && currentOperator !== 'is null' && currentOperator !== 'is not null' && (currentOperator === 'between' || currentOperator === 'not between')) {
             var _errors_minValue, _errors_maxValue;
@@ -443,7 +441,6 @@ function FilterContent({ onHide, dataFilterValue }) {
                 required: 'Enter the maxValue'
             })))));
         }
-        console.log('currentOperator', currentOperator);
         if (currentOperator === '=' || currentOperator === '!=' || currentOperator === 'like' || currentOperator === 'not like' || currentOperator === 'match_all' || currentOperator === 'match_any' || currentOperator === 'match_phrase' || currentOperator === 'match_phrase_prefix') {
             var _errors_value;
             return /*#__PURE__*/ external_react_default().createElement((external_react_default()).Fragment, null, /*#__PURE__*/ external_react_default().createElement(ui_.Field, {
@@ -708,7 +705,6 @@ function DiscoverFilter() {
         },
         content: /*#__PURE__*/ external_react_default().createElement(FilterContent, {
             onHide: ()=>{
-                console.log('onHide');
                 setOpen(false);
             }
         }),
@@ -884,7 +880,6 @@ function countValueDistribution(jsonArray, key) {
 }
 function TopData({ field }) {
     var _field_Type;
-    console.log(field);
     const topData = (0,react/* useAtomValue */.md)(discover/* topDataAtom */.l_);
     const tableTotalCount = (0,react/* useAtomValue */.md)(discover/* tableTotalCountAtom */.HC);
     const [dataFilter, setDataFilter] = (0,react/* useAtom */.fp)(discover/* dataFilterAtom */.EA);
@@ -967,7 +962,6 @@ function TopData({ field }) {
         }, /*#__PURE__*/ external_react_default().createElement(ui_.IconButton, {
             name: "plus-circle",
             onClick: (e)=>{
-                console.log(value);
                 setDataFilter([
                     ...dataFilter,
                     {
@@ -1026,8 +1020,9 @@ function FieldItem(props) {
             className: "-ml-3 flex"
         }, "Tree");
     }
-    return /*#__PURE__*/ external_react_default().createElement("div", null, /*#__PURE__*/ external_react_default().createElement(ui_.Toggletip, {
+    return /*#__PURE__*/ external_react_default().createElement("div", null, /*#__PURE__*/ external_react_default().createElement(ui_.Tooltip, {
         placement: "right",
+        interactive: true,
         content: /*#__PURE__*/ external_react_default().createElement(TopData, {
             field: field
         })
@@ -1581,7 +1576,6 @@ function DiscoverHistogram() {
                 const [startIndex, endIndex] = areas[0].coordRange;
                 const timeInterval = interval === type/* IntervalEnum */.B.Auto ? (0,constants/* getAutoInterval */.Vy)(currentDate).interval_unit : interval;
                 const chartsEndDate = dayjs_min_default()(new Date(tableDataCharts[endIndex]['TT'])).add(interval_value, timeInterval);
-                console.log('aaa', discoverCurrent);
                 setDiscoverCurrent(discover_histogram_object_spread_props(discover_histogram_object_spread({}, discoverCurrent), {
                     date: [
                         dayjs_min_default()(tableDataCharts[startIndex]['TT']),
@@ -2580,7 +2574,6 @@ function SurroundingDiscoverFilter(props) {
     const discoverFilterRef = (0,external_react_.useRef)(null);
     const { t } = (0,es/* useTranslation */.Bd)();
     const theme = (0,ui_.useTheme2)();
-    console.log('surroundingDataFilter', surroundingDataFilter);
     return /*#__PURE__*/ external_react_default().createElement(discover_filter_style_DiscoverFilterWrapper, {
         ref: discoverFilterRef,
         className: (0,css_.css)`
@@ -2637,7 +2630,6 @@ function SurroundingDiscoverFilter(props) {
                                                     `,
                 onClick: ()=>{
                     const data_filters = surroundingDataFilter.filter((e)=>e !== dataFilterValue) || [];
-                    console.log('data_filters', data_filters);
                     setSurroundingDataFilter(data_filters);
                 // setLoc(prev => {
                 //     const searchParams = prev.searchParams;
@@ -2661,7 +2653,6 @@ function SurroundingDiscoverFilter(props) {
         },
         content: /*#__PURE__*/ external_react_default().createElement(discover_filter_filter_content_FilterContent, {
             onHide: ()=>{
-                console.log('onHide');
                 setOpen(false);
             }
         }),
@@ -2974,7 +2965,6 @@ var utils = __webpack_require__(2551);
 
 
 function SurroundingContentTableActions({ fieldName, fieldValue }) {
-    console.log(fieldName, fieldValue);
     // const [selectedSurroundingFields, setSelectedSurroundingFields] = useAtom(surroundingSelectedFieldsAtom);
     const [surroundingDataFilter, setSurroundingDataFilter] = (0,react/* useAtom */.fp)(discover/* surroundingDataFilterAtom */.wc);
     const tableFields = (0,react/* useAtomValue */.md)(discover/* tableFieldsAtom */.D_);
@@ -2996,7 +2986,6 @@ function SurroundingContentTableActions({ fieldName, fieldValue }) {
     }, /*#__PURE__*/ external_react_default().createElement(ui_.IconButton, {
         name: "plus-circle",
         onClick: (e)=>{
-            console.log(e);
             setSurroundingDataFilter([
                 ...surroundingDataFilter,
                 {
@@ -3017,7 +3006,6 @@ function SurroundingContentTableActions({ fieldName, fieldValue }) {
             marginLeft: '4px'
         },
         onClick: (e)=>{
-            console.log(e);
             setSurroundingDataFilter([
                 ...surroundingDataFilter,
                 {
@@ -3035,6 +3023,8 @@ function SurroundingContentTableActions({ fieldName, fieldValue }) {
     }))));
 }
 
+// EXTERNAL MODULE: ./utils/errors.ts
+var errors = __webpack_require__(9071);
 ;// ./components/surrounding-logs/index.tsx
 'use client';
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
@@ -3136,6 +3126,8 @@ function surrounding_logs_object_spread_props(target, source) {
 
 
 
+
+
 function SurroundingLogs() {
     const theme = (0,ui_.useTheme2)();
     const selectedRow = (0,react/* useAtomValue */.md)(discover/* selectedRowAtom */.nn);
@@ -3180,13 +3172,11 @@ function SurroundingLogs() {
         return newResult;
     };
     const { loading: getAfterSurroundingDataLoading, run: getAfterSurroundingData } = (0,useRequest/* default */.A)(({ pageSize = afterTimeFieldPageSize, time = afterTime })=>{
-        console.log(time);
         const params = getQueryParams({
             pageSize: pageSize + 1,
             operator: '>',
             time
         });
-        console.log(params.time);
         return (0,external_rxjs_.lastValueFrom)(getSurroundingDataService(surrounding_logs_object_spread({
             selectdbDS
         }, params)));
@@ -3320,7 +3310,10 @@ function SurroundingLogs() {
                 }
             })(),
         onError: (err)=>{
-            console.log(err);
+            (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                source: 'SurroundingLogs',
+                action: 'initSurroundingData'
+            });
         }
     });
     (0,external_react_.useEffect)(()=>{
@@ -4081,7 +4074,6 @@ function DiscoverContent({ fetchNextPage, getTraceData }) {
             title: "Surrounding Items will ignore the existing interface's filter conditions and view the context through time."
         }, /*#__PURE__*/ external_react_default().createElement("a", {
             onClick: ()=>{
-                console.log('row', row);
                 setSurroundingLogsOpen(true);
                 setSelectedRow(row.original);
             },
@@ -4495,9 +4487,7 @@ const CascaderStyle = (0,css_.css)`
 
 
 
-
 function SearchType() {
-    const { t } = (0,es/* useTranslation */.Bd)();
     const [searchType, setSearchType] = (0,react/* useAtom */.fp)(discover/* searchTypeAtom */.WM);
     const setSearchValue = (0,react/* useSetAtom */.Xr)(discover/* searchValueAtom */.P8);
     const disabledOptions = (0,react/* useAtomValue */.md)(discover/* disabledOptionsAtom */.IH);
@@ -4586,6 +4576,8 @@ function SearchType() {
 // import { cn } from 'utils/tailwind';
 
 
+
+
 // import { CodeEditor, CodeEditorSuggestionItem, ReactMonacoEditor } from '@grafana/ui';
 function SQLSearch({ style, onQuerying }) {
     const searchType = (0,react/* useAtomValue */.md)(discover/* searchTypeAtom */.WM);
@@ -4605,7 +4597,6 @@ function SQLSearch({ style, onQuerying }) {
         value: searchValue,
         onChange: (e)=>{
             var _e_target;
-            console.log(e);
             setSearchValue((_e_target = e.target) === null || _e_target === void 0 ? void 0 : _e_target.value);
         },
         onKeyDown: (e)=>{
@@ -4617,8 +4608,10 @@ function SQLSearch({ style, onQuerying }) {
                     onQuerying === null || onQuerying === void 0 ? void 0 : onQuerying();
                 } catch (err) {
                     // swallow errors from callback to avoid breaking the input
-                    // eslint-disable-next-line no-console
-                    console.error('onQuerying handler error:', err);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'SQLSearch',
+                        action: 'onQuerying'
+                    });
                 }
             }
         },
@@ -4634,6 +4627,8 @@ var metaservice = __webpack_require__(8161);
 
 
 
+
+
 function Lucene({ onQuerying }) {
     const [searchValue, setSearchValue] = (0,react/* useAtom */.fp)(discover/* searchValueAtom */.P8);
     if (false) // removed by dead control flow
@@ -4642,7 +4637,6 @@ function Lucene({ onQuerying }) {
         value: searchValue,
         onChange: (e)=>{
             var _e_target;
-            console.log(e);
             setSearchValue((_e_target = e.target) === null || _e_target === void 0 ? void 0 : _e_target.value);
         },
         onKeyDown: (e)=>{
@@ -4651,8 +4645,10 @@ function Lucene({ onQuerying }) {
                 try {
                     onQuerying === null || onQuerying === void 0 ? void 0 : onQuerying();
                 } catch (err) {
-                    // eslint-disable-next-line no-console
-                    console.error('onQuerying handler error:', err);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'Lucene',
+                        action: 'onQuerying'
+                    });
                 }
             }
         },
@@ -4803,6 +4799,7 @@ function DiscoverHeader(props) {
 {}
     const [_loc, setLoc] = (0,react/* useAtom */.fp)(discover/* locationAtom */.JT);
     // const [currentCluster, setCurrentCluster] = useAtom(currentClusterAtom);
+    // const setTableFields = useSetAtom(tableFieldsAtom);
     const setTableFields = (0,react/* useSetAtom */.Xr)(discover/* tableFieldsAtom */.D_);
     const [timeFields, setTimeFields] = (0,react/* useAtom */.fp)(discover/* timeFieldsAtom */.Gg);
     const [_currentDate, setCurrentDate] = (0,react/* useAtom */.fp)(discover/* currentDateAtom */.Zb);
@@ -4847,7 +4844,10 @@ function DiscoverHeader(props) {
                     setDatabases(options);
                 }
             },
-            error: (err)=>console.log('Fetch Error', err)
+            error: (err)=>(0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'DiscoverHeader',
+                    action: 'fetchDatabases'
+                })
         });
     }, [
         setDatabases
@@ -4877,7 +4877,6 @@ function DiscoverHeader(props) {
             next: ({ data, ok })=>{
                 if (ok) {
                     const frame = (0,data_.toDataFrame)(data.results.getFields.frames[0]);
-                    console.log('frame', frame);
                     const values = Array.from(frame.fields[0].values);
                     const fieldTypes = Array.from(frame.fields[1].values);
                     const tableFields = values.map((item, index)=>{
@@ -4913,7 +4912,10 @@ function DiscoverHeader(props) {
                 }
             },
             error: (err)=>{
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'DiscoverHeader',
+                    action: 'getFields'
+                });
             }
         });
     }
@@ -4955,7 +4957,10 @@ function DiscoverHeader(props) {
                 }
             },
             error: (err)=>{
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'DiscoverHeader',
+                    action: 'getIndexes'
+                });
             }
         });
     }
@@ -4969,7 +4974,6 @@ function DiscoverHeader(props) {
             const persistedDatabase = discoverCurrent.database || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.database) || '';
             const persistedTable = currentTable || persistedTableStorage || discoverCurrent.table || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.table) || '';
             const persistedTimeField = discoverCurrent.timeField || (persistedDiscoverCurrentStorage === null || persistedDiscoverCurrentStorage === void 0 ? void 0 : persistedDiscoverCurrentStorage.timeField) || '';
-            const hasPersistedSelection = Boolean(persistedDatasourceUid && persistedDatabase && persistedTable && persistedTimeField);
             const defaultDatasourceUid = persistedDatasourceUid || configuredDatasourceUid || '';
             const defaultDatabase = persistedDatabase || logsConfig.database || '';
             const defaultLogsTable = persistedTable || logsConfig.logsTable || '';
@@ -5014,12 +5018,7 @@ function DiscoverHeader(props) {
                                 }, {
                                     datasource: ds,
                                     database: defaultDatabase,
-                                    preferredTimeField: persistedTimeField,
-                                    onResolved: hasPersistedSelection ? (timeField)=>{
-                                        if (timeField && timeField === persistedTimeField) {
-                                            props === null || props === void 0 ? void 0 : props.onQuerying();
-                                        }
-                                    } : undefined
+                                    preferredTimeField: persistedTimeField
                                 });
                                 getIndexes({
                                     value: targetTable
@@ -5030,10 +5029,16 @@ function DiscoverHeader(props) {
                             }
                         }
                     },
-                    error: (err)=>console.log('Fetch Error', err)
+                    error: (err)=>(0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                            source: 'DiscoverHeader',
+                            action: 'getTables'
+                        })
                 });
             } catch (error) {
-                console.error('Failed to initialize discover defaults from plugin config', error);
+                (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                    source: 'DiscoverHeader',
+                    action: 'initHeaderData'
+                });
             }
         })();
     }
@@ -5062,7 +5067,6 @@ function DiscoverHeader(props) {
         noDefault: true,
         filter: (ds)=>ds.type === 'mysql',
         onChange: (item)=>{
-            console.log('item', item);
             setSelectedDatasource(item);
             // Always fetch databases even if the same datasource is selected
             fetchDatabases(item);
@@ -5096,7 +5100,10 @@ function DiscoverHeader(props) {
                         setTables(options);
                     }
                 },
-                error: (err)=>console.log('Fetch Error', err)
+                error: (err)=>(0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'DiscoverHeader',
+                        action: 'getTables'
+                    })
             });
         }
     })), /*#__PURE__*/ external_react_default().createElement(ui_.Field, {
@@ -5109,7 +5116,6 @@ function DiscoverHeader(props) {
         width: 15,
         value: currentTable,
         onChange: (selectedTable)=>{
-            console.log('selectedTable.value', selectedTable.value);
             setDiscoverCurrent(discover_header_object_spread_props(discover_header_object_spread({}, discoverCurrent), {
                 table: selectedTable.value
             }));
@@ -5433,7 +5439,6 @@ function splitAndTrimWithBracket(input) {
 
 ;// ./utils/query-parser/serializers.ts
 /* unused harmony import specifier */ var serializers_IMPLICIT_FIELD;
-// @ts-ignore: no type declarations for '@hyperdx/lucene'
 function serializers_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -5495,12 +5500,10 @@ class EnglishSerializer {
                 return 'AND NOT';
             case 'OR NOT':
                 return 'OR NOT';
-            // @ts-ignore TODO: Types need to be fixed upstream
             case '&&':
             case '<implicit>':
             case 'AND':
                 return 'AND';
-            // @ts-ignore TODO: Types need to be fixed upstream
             case '||':
             case 'OR':
                 return 'OR';
@@ -5560,12 +5563,10 @@ class SQLSerializer {
                 return 'AND NOT';
             case 'OR NOT':
                 return 'OR NOT';
-            // @ts-ignore TODO: Types need to be fixed upstream
             case '&&':
             case '<implicit>':
             case 'AND':
                 return 'AND';
-            // @ts-ignore TODO: Types need to be fixed upstream
             case '||':
             case 'OR':
                 return 'OR';
@@ -6073,7 +6074,9 @@ class CustomSchemaSQLSerializerV2 extends SQLSerializer {
 }
 
 ;// ./utils/query-parser/ast.ts
+/* unused harmony import specifier */ var logWarning;
 /* unused harmony import specifier */ var ast_EnglishSerializer;
+/* unused harmony import specifier */ var toError;
 function ast_asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -6103,13 +6106,14 @@ function ast_async_to_generator(fn) {
         });
     };
 }
-// @ts-ignore: no type declarations for '@hyperdx/lucene'
+
+
 
 
 
 
 function parse(query) {
-    return lucene.parse(encodeSpecialTokens(query));
+    return lucene/* parse */.qg(encodeSpecialTokens(query));
 }
 function nodeTerm(node, serializer) {
     return ast_async_to_generator(function*() {
@@ -6165,7 +6169,7 @@ function nodeTerm(node, serializer) {
                 suffixWildcard = true;
                 term = term.slice(0, -1);
             }
-            return serializer.fieldSearch(field, term, isNegatedField, prefixWildcard, suffixWildcard, nodeTermInstance.quoted);
+            return serializer.fieldSearch(field, term, isNegatedField, prefixWildcard, suffixWildcard, Boolean(nodeTermInstance.quoted));
         }
         if (node.inclusive != null) {
             const rangedTerm = node;
@@ -6210,7 +6214,12 @@ function genEnglishExplanation(query) {
                 return yield serialize(parsedQ, serializer);
             }
         } catch (e) {
-            console.warn('Parse failure', query, e);
+            const error = toError(e);
+            logWarning('Lucene parse failure', {
+                source: 'query-parser',
+                query,
+                error: error.message
+            });
         }
         return `Message containing ${query}`;
     })();
@@ -6337,6 +6346,8 @@ function lucene_async_to_generator(fn) {
     };
 }
 
+
+
 function getWhereSQLViaLucene(_0) {
     return lucene_async_to_generator(function*({ query, databaseName, tableName, connectionId, implicitColumnExpression, datasourceType }) {
         const trimmedQuery = query === null || query === void 0 ? void 0 : query.trim();
@@ -6353,13 +6364,12 @@ function getWhereSQLViaLucene(_0) {
         try {
             const ast = parse(trimmedQuery);
             const whereSQL = yield genWhereSQL(ast, serializer);
-            console.log({
-                query,
-                whereSQL
-            });
             return whereSQL;
         } catch (error) {
-            console.error('Failed to generate Lucene WHERE SQL', error);
+            (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                source: 'lucene',
+                action: 'getWhereSQLViaLucene'
+            });
             throw error;
         }
     }).apply(this, arguments);
@@ -6546,6 +6556,8 @@ function useDiscoverData_object_spread_props(target, source) {
 
 
 
+
+
 function useDiscoverData() {
     const didRunPageEffect = (0,external_react_.useRef)(false);
     const didRunAutoRefreshEffect = (0,external_react_.useRef)(false);
@@ -6608,7 +6620,10 @@ function useDiscoverData() {
                             getTableData: false
                         }));
                     setTableData([]);
-                    console.error('Lucene query build failed', error);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                        source: 'useDiscoverData',
+                        action: 'buildLuceneWhereClause'
+                    });
                     return;
                 }
             }
@@ -6647,7 +6662,10 @@ function useDiscoverData() {
                         }));
                     // Clear table data on network / connection errors to ensure UI refreshes
                     setTableData([]);
-                    console.log('Fetch Error', err);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'useDiscoverData',
+                        action: 'getTableData'
+                    });
                 }
             });
         })(), [
@@ -6709,7 +6727,10 @@ function useDiscoverData() {
                             getTableDataCharts: false
                         }));
                     setTableDataCharts([]);
-                    console.error('Lucene query build failed', error);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                        source: 'useDiscoverData',
+                        action: 'buildLuceneWhereClause'
+                    });
                     return;
                 }
             }
@@ -6749,7 +6770,10 @@ function useDiscoverData() {
                         }));
                     // Clear charts on network / connection errors
                     setTableDataCharts([]);
-                    console.log('Fetch Error', err);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'useDiscoverData',
+                        action: 'getTableDataCharts'
+                    });
                 }
             });
         })(), [
@@ -6802,7 +6826,10 @@ function useDiscoverData() {
                         payload.lucene_where = luceneWhere;
                     }
                 } catch (error) {
-                    console.error('Lucene query build failed', error);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                        source: 'useDiscoverData',
+                        action: 'buildLuceneWhereClause'
+                    });
                     setTopData([]);
                     return;
                 }
@@ -6824,7 +6851,10 @@ function useDiscoverData() {
                     setTopData(rowsData);
                 },
                 error: (err)=>{
-                    console.log('Fetch Error', err);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'useDiscoverData',
+                        action: 'getTopData'
+                    });
                     setTopData([]);
                 }
             });
@@ -6878,7 +6908,10 @@ function useDiscoverData() {
                         payload.lucene_where = luceneWhere;
                     }
                 } catch (error) {
-                    console.error('Lucene query build failed', error);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(error), {
+                        source: 'useDiscoverData',
+                        action: 'buildLuceneWhereClause'
+                    });
                     setTableTotalCount(0);
                     return;
                 }
@@ -6910,7 +6943,10 @@ function useDiscoverData() {
                 error: (err)=>{
                     // Ensure we clear the count on error so UI doesn't keep previous value
                     setTableTotalCount(0);
-                    console.log('Fetch Error', err);
+                    (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                        source: 'useDiscoverData',
+                        action: 'getTableDataCount'
+                    });
                 }
             });
         })(), [
@@ -6925,6 +6961,7 @@ function useDiscoverData() {
         searchType,
         searchValue,
         selectdbDS,
+        setLoading,
         setTableTotalCount,
         tableFields
     ]);
@@ -6968,7 +7005,10 @@ function useDiscoverData() {
             error: (err)=>{
                 // Clear trace data on error
                 setTraceData([]);
-                console.log('Fetch Error', err);
+                (0,runtime_.logError)((0,errors/* toError */.i)(err), {
+                    source: 'useDiscoverData',
+                    action: 'getTraceData'
+                });
                 callback && callback(err.status);
                 message/* default */.Ay.error('Failed to request trace');
                 setTraceData(null);
@@ -7148,4 +7188,4 @@ function PageDiscover() {
 /***/ }
 
 }]);
-//# sourceMappingURL=285.js.map?_cache=a78cb7aa561329aaefa0
+//# sourceMappingURL=285.js.map?_cache=78aad12c01b5e573affd

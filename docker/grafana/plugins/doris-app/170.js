@@ -1,5 +1,5 @@
 "use strict";
-(self["webpackChunkdoris_app"] = self["webpackChunkdoris_app"] || []).push([[170],{
+(self["webpackChunkvelodb_doris_app"] = self["webpackChunkvelodb_doris_app"] || []).push([[170],{
 
 /***/ 202
 (__unused_webpack_module, __webpack_exports__, __webpack_require__) {
@@ -27,6 +27,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _testIds__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(5611);
 /* harmony import */ var _store_discover__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(6247);
 /* harmony import */ var _types_plugin_settings__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(325);
+/* harmony import */ var _utils_errors__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(9071);
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
     try {
         var info = gen[key](arg);
@@ -120,6 +121,7 @@ function _object_spread_props(target, source) {
 
 
 
+
 const AppConfig = ({ plugin })=>{
     const s = (0,_grafana_ui__WEBPACK_IMPORTED_MODULE_5__.useStyles2)(getStyles);
     const { enabled, pinned, jsonData, secureJsonFields } = plugin.meta;
@@ -160,7 +162,10 @@ const AppConfig = ({ plugin })=>{
                     setDatabases(options);
                 }
             },
-            error: (err)=>console.log('Fetch Error', err)
+            error: (err)=>(0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_11__/* .toError */ .i)(err), {
+                    source: 'AppConfig',
+                    action: 'fetchDatabases'
+                })
         });
     }, [
         setDatabases,
@@ -190,7 +195,10 @@ const AppConfig = ({ plugin })=>{
                     setTables(options);
                 }
             },
-            error: (err)=>console.log('Fetch Error', err)
+            error: (err)=>(0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_11__/* .toError */ .i)(err), {
+                    source: 'AppConfig',
+                    action: 'fetchTables'
+                })
         });
     }, [
         setTables,
@@ -379,7 +387,10 @@ const updatePluginAndReload = (pluginId, data)=>_async_to_generator(function*() 
             // This is not ideal, however unfortunately currently there is no supported way for updating the plugin state.
             window.location.reload();
         } catch (e) {
-            console.error('Error while updating the plugin', e);
+            (0,_grafana_runtime__WEBPACK_IMPORTED_MODULE_4__.logError)((0,_utils_errors__WEBPACK_IMPORTED_MODULE_11__/* .toError */ .i)(e), {
+                source: 'AppConfig',
+                action: 'updatePluginAndReload'
+            });
         }
     })();
 const updatePlugin = (pluginId, data)=>_async_to_generator(function*() {
@@ -698,4 +709,4 @@ function translationDateIntervalType(type) {
 /***/ }
 
 }]);
-//# sourceMappingURL=170.js.map?_cache=aaddab54105ad46e9040
+//# sourceMappingURL=170.js.map?_cache=0af4d6d7753bcb84128f
