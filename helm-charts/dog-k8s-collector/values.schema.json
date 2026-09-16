@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "dog-k8s-collector values",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "gateway": {"type": "object", "additionalProperties": false, "properties": {"endpoint": {"type": "string"}, "balancerName": {"type": "string", "enum": ["", "round_robin", "pick_first"]}, "tls": {"type": "object", "properties": {"insecure": {"type": "boolean"}}}}},
+    "clusterName": {"type": "string"},
+    "platform": {"type": "string", "enum": ["generic", "k3s", "eks", "gke", "aks", "ack", "openshift"]},
+    "timezone": {"type": "string"},
+    "imagePullSecrets": {"type": "array"},
+    "nameOverride": {"type": "string"},
+    "fullnameOverride": {"type": "string"},
+    "presets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "logsCollection": {"type": "object", "properties": {"enabled": {"type": "boolean"}}},
+        "kubeletMetrics": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "interval": {"type": "string"}, "insecureSkipVerify": {"type": "boolean"}}},
+        "hostMetrics": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "interval": {"type": "string"}, "processes": {"type": "boolean"}}},
+        "clusterMetrics": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "interval": {"type": "string"}}},
+        "kubernetesEvents": {"type": "object", "properties": {"enabled": {"type": "boolean"}}},
+        "otlp": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "hostPortGrpc": {"type": "integer"}, "hostPortHttp": {"type": "integer"}}},
+        "prometheusScrape": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "interval": {"type": "string"}, "extraScrapeConfigs": {"type": "array"}}},
+        "journald": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "directory": {"type": "string"}, "units": {"type": "array"}}},
+        "kubernetesAttributes": {"type": "object", "properties": {"labels": {"type": "array"}, "annotations": {"type": "array"}, "otelAnnotations": {"type": "boolean"}}},
+        "resourceDetection": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "extraDetectors": {"type": "array"}}},
+        "selfMonitoring": {"type": "object", "properties": {"enabled": {"type": "boolean"}}}
+      }
+    },
+    "logs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "namespaces": {"type": "object", "properties": {"include": {"type": "array", "items": {"type": "string"}}, "exclude": {"type": "array", "items": {"type": "string"}}}},
+        "containers": {"type": "object", "properties": {"exclude": {"type": "array", "items": {"type": "string"}}}},
+        "excludePaths": {"type": "array", "items": {"type": "string"}},
+        "startAt": {"type": "string", "enum": ["end", "beginning"]},
+        "maxLogSize": {"type": "string"},
+        "dockerContainersPath": {"type": "string"},
+        "json": {"type": "object", "properties": {"autodetect": {"type": "boolean"}, "parseTimestamp": {"type": "boolean"}, "timestampFields": {"type": "array", "items": {"type": "string"}}, "severityFields": {"type": "array", "items": {"type": "string"}}, "messageFields": {"type": "array", "items": {"type": "string"}}}},
+        "multiline": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "firstLinePattern": {"type": "string"}}},
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+              "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+              "selector": {"type": "object", "additionalProperties": false, "properties": {"namespace": {"type": "string"}, "container": {"type": "string"}, "bodyPrefix": {"type": "string"}}},
+              "preset": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+              "format": {"type": "string"},
+              "regex": {"type": "string"},
+              "json": {"type": "object", "properties": {"timestampFields": {"type": "array"}, "severityFields": {"type": "array"}, "messageFields": {"type": "array"}}},
+              "timestamp": {"type": "object", "properties": {"layout": {"type": "string"}, "layoutType": {"type": "string", "enum": ["strptime", "gotime", "epoch"]}, "timezone": {"type": "string"}, "tzOffset": {"type": "string"}}},
+              "severity": {"type": "object", "properties": {"field": {"type": "string"}, "mapping": {"type": "object"}}},
+              "multiline": {"type": "object", "properties": {"firstLinePattern": {"type": "string"}, "maxLogSize": {"type": "string"}, "flushPeriod": {"type": "string"}}},
+              "drop": {"type": "array", "items": {"type": "string"}},
+              "quiet": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "agent": {"type": "object", "additionalProperties": false, "properties": {"image": {"type": "object"}, "resources": {"type": "object"}, "nodeSelector": {"type": "object"}, "tolerations": {"type": "array"}, "priorityClassName": {"type": "string"}, "storage": {"type": "object"}, "tzdata": {"type": "object"}, "memoryLimiter": {"type": "object"}, "queueSize": {"type": "integer"}, "logging": {"type": "object"}, "extraConfig": {"type": "object"}}},
+    "cluster": {"type": "object", "additionalProperties": false, "properties": {"image": {"type": "object"}, "replicas": {"type": "integer"}, "resources": {"type": "object"}, "nodeSelector": {"type": "object"}, "tolerations": {"type": "array"}, "leaderElection": {"type": "object"}, "logging": {"type": "object"}, "extraConfig": {"type": "object"}}},
+    "collectors": {"description": "pre-release key, rejected with a hint by the templates"},
+    "metrics": {"description": "pre-release key, rejected with a hint by the templates"},
+    "events": {"description": "pre-release key, rejected with a hint by the templates"},
+    "otlp": {"description": "pre-release key, rejected with a hint by the templates"},
+    "journald": {"description": "pre-release key, rejected with a hint by the templates"},
+    "kubernetesAttributes": {"description": "pre-release key, rejected with a hint by the templates"},
+    "resourceDetection": {"description": "pre-release key, rejected with a hint by the templates"},
+    "global": {"description": "pre-release key, rejected with a hint by the templates"}
+  }
+}

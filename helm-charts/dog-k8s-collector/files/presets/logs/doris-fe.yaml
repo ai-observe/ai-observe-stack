@@ -1,0 +1,12 @@
+# Apache Doris FE runtime log (log4j): "RuntimeLogger 2026-09-09 09:47:49,347 INFO (thread|id) [Class.method():line] msg"
+# FE writes it to stderr and interleaves audit lines (see doris-fe-audit).
+format: regex
+selector:
+  bodyPrefix: '^RuntimeLogger '
+regex: '^RuntimeLogger (?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) (?P<level>[A-Z]+) \((?P<thread>[^)]*)\) \[(?P<location>[^\]]*)\]\s?(?P<msg>(?s:.*))$'
+multiline:
+  firstLinePattern: '^(RuntimeLogger |AuditLogger )'
+timestamp:
+  layout: "%Y-%m-%d %H:%M:%S,%L"
+severity:
+  field: level

@@ -1,0 +1,25 @@
+# dog-k8s-collector: collect this cluster into a DOG Stack gateway.
+#
+#   helm install dog-k8s-collector ./dog-k8s-collector -n dog -f examples/dog-k8s-collector/values.yaml
+#
+# Defaults collect every namespace (JSON lines parsed automatically), kubelet, node and
+# cluster metrics, and Kubernetes Events. Everything else is optional.
+
+gateway:
+  endpoint: dog-ai-observe-stack-otel-gateway.dog.svc:4317   # <release>-ai-observe-stack-otel-gateway.<namespace>.svc:4317
+
+clusterName: my-cluster        # k8s.cluster.name on every record
+platform: generic              # generic | k3s | eks | gke | aks | ack | openshift
+
+logs:
+  namespaces:
+    include: ["*"]
+    exclude: []                # e.g. [kube-system]
+  containers:
+    exclude: []                # e.g. [istio-proxy, linkerd-proxy]
+  # Parsing rules for your own log formats: see USER_GUIDE.md and json-app.yaml
+  rules: []
+
+# presets:
+#   prometheusScrape: {enabled: true}   # scrape pods annotated prometheus.io/scrape=true
+#   otlp: {hostPortHttp: 4318}          # node-local OTLP entry for SDKs: http://$(HOST_IP):4318

@@ -1,315 +1,213 @@
 # =============================================================================
-# AIObserve Stack
+# AIObserve Stack (DOG Stack: Doris + OpenTelemetry + Grafana)
 # =============================================================================
-# Default values for AIObserve Stack helm chart.
+# The DOG Stack is an observability backend:
+#   gateway ─ OpenTelemetry Collector (StatefulSet): receives OTLP, writes Doris
+#   doris   ─ storage (deployed by the Doris Operator, or an existing cluster)
+#   grafana ─ dashboards through the Doris app plugin
+# That is what a default install deploys. Anything that speaks OTLP can send to the gateway.
+#
+# Collecting a Kubernetes cluster (container logs, kubelet / node / cluster metrics, Events)
+# is the separate dog-k8s-collector chart, installed once per cluster and pointed at this
+# gateway: see helm-charts/examples/dog-k8s-collector/.
+#
+# Quick start (existing Doris):
+#   helm install dog ./ai-observe-stack -n dog --create-namespace \
+#     --set doris.mode=external --set doris.external.host=my-fe.doris.svc \
+#     --set doris.internal.operator.enabled=false
 
 # -----------------------------------------------------------------------------
-# Global settings
+# Global
 # -----------------------------------------------------------------------------
 global:
-  nameOverride: ""
-  fullnameOverride: ""
-
-# -----------------------------------------------------------------------------
-# AIObserve Stack settings
-# -----------------------------------------------------------------------------
-openObservabilityStack:
-  # Timezone for the entire stack (Doris + OTel Collector)
-  # Example: Asia/Shanghai, America/New_York, Europe/London
-  # Default: UTC
+  # IANA time zone handed to the Doris exporter
   timezone: UTC
+  # Pull secrets for every image the chart runs (private registries)
+  imagePullSecrets: []
 
-# =============================================================================
-# Doris Configuration
-# =============================================================================
+# -----------------------------------------------------------------------------
+# Doris (storage)
+# -----------------------------------------------------------------------------
 doris:
-  # Mode: "internal" | "external"
-  # - internal: Deploy Doris using Doris Operator (default)
-  # - external: Connect to an existing Doris cluster
+  # internal: deploy Doris with the Doris Operator | external: use an existing cluster
   mode: internal
-
-  # Database name for storing observability data
   database: otel
 
-  # ---------------------------------------------------------------------------
-  # Internal mode configuration (when mode: internal)
-  # ---------------------------------------------------------------------------
   internal:
-    # Doris Operator settings
     operator:
-      # Set to false if Doris Operator is already installed in your cluster
+      # The Doris Operator is cluster-wide (ClusterRole, webhooks with fixed names): install it
+      # with exactly one release per cluster and set false in every other release.
       enabled: true
-
-    # DorisCluster specification
     cluster:
       fe:
         replicas: 1
         image: apache/doris:fe-4.0.3
         resources:
-          requests:
-            cpu: 2
-            memory: 4Gi
-          limits:
-            cpu: 4
-            memory: 8Gi
+          requests: {cpu: 2, memory: 4Gi}
+          limits: {cpu: 4, memory: 8Gi}
         service:
           type: ClusterIP
-
       be:
         replicas: 1
         image: apache/doris:be-4.0.3
         resources:
-          requests:
-            cpu: 2
-            memory: 4Gi
-          limits:
-            cpu: 4
-            memory: 8Gi
+          requests: {cpu: 2, memory: 4Gi}
+          limits: {cpu: 4, memory: 8Gi}
         service:
           type: ClusterIP
-
       persistence:
         enabled: true
         storageClass: ""
-        fe:
-          size: 20Gi
-        be:
-          size: 20Gi
+        fe: {size: 20Gi}
+        be: {size: 20Gi}
 
-  # ---------------------------------------------------------------------------
-  # External mode configuration (when mode: external)
-  # ---------------------------------------------------------------------------
   external:
     host: ""
-    port: 9030
-    # FE HTTP port for Web UI and Stream Load routing
-    feHttpPort: 8030
-    # BE HTTP port for direct Stream Load (optional, for advanced use cases)
-    beHttpPort: 8040
+    port: 9030          # MySQL protocol (schema creation, Grafana)
+    feHttpPort: 8030    # Stream Load entry point
     user: "root"
     password: ""
-    # Use existing secret for credentials (optional)
+    # Credentials from an existing Secret instead of the two values above.
+    # The chart always injects credentials through a Secret; with these empty it creates
+    # <release>-doris-credentials from user/password.
     existingSecret: ""
     userKey: "username"
     passwordKey: "password"
 
-# =============================================================================
-# OpenTelemetry Collector Configuration
-# =============================================================================
-otel:
+# -----------------------------------------------------------------------------
+# Gateway (StatefulSet): receives OTLP, applies Doris-side transforms, writes Doris.
+# The only component that talks to Doris. Rendered as <release>-otel-gateway.
+# -----------------------------------------------------------------------------
+gateway:
   enabled: true
-
   image:
-    repository: otel/opentelemetry-collector-contrib
-    tag: "0.144.0"
+    repository: otel/opentelemetry-collector-contrib   # contrib: doris exporter + tzdata
+    tag: "0.160.0"
     pullPolicy: IfNotPresent
-
-  # High Availability (StatefulSet)
   replicas: 2
   podManagementPolicy: Parallel
-
-  # Persistence for collector logs
-  persistence:
-    enabled: true
-    storageClass: ""
-    size: 10Gi
-    logPath: /var/log/otelcol
-
-  # Logging
-  logging:
-    level: info
-    format: json
-    fileOutput:
-      enabled: true
-
-  # Resources
   resources:
-    requests:
-      cpu: "200m"
-      memory: "256Mi"
-    limits:
-      cpu: "1"
-      memory: "1Gi"
-
-  # Doris exporter settings
-  dorisExporter:
-    tables:
-      logs: otel_logs
-      traces: otel_traces
-      metrics: otel_metrics
-    historyDays: 7
-    createHistoryDays: 3
-    replicationNum: 1
-    timeout: 60s
-    sendingQueue:
-      enabled: true
-      numConsumers: 10
-      queueSize: 1000
-
-  # Batch processor
-  batch:
-    timeout: 5s
-    sendBatchSize: 10000
-    sendBatchMaxSize: 11000
-
-  # Memory limiter
-  memoryLimiter:
-    checkInterval: 1s
-    limitMib: 1024
-    spikeLimitMib: 256
-
-  # Service ports
+    requests: {cpu: "200m", memory: "256Mi"}
+    limits: {cpu: "1", memory: "1Gi"}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  priorityClassName: ""
+  # The contrib image runs as uid 10001; fsGroup lets it write the PVC on any CSI driver
+  podSecurityContext:
+    runAsUser: 10001
+    runAsGroup: 10001
+    fsGroup: 10001
+    runAsNonRoot: true
+    fsGroupChangePolicy: OnRootMismatch
   ports:
     otlpGrpc: 4317
     otlpHttp: 4318
     metrics: 8888
     healthCheck: 13133
-
-  # Debug exporter (disable in production)
-  debug:
-    enabled: true
-    verbosity: basic
-
-  # ---------------------------------------------------------------------------
-  # Self-Monitoring Configuration
-  # ---------------------------------------------------------------------------
+  # Largest OTLP/gRPC request accepted; agents send batches of up to sendingQueue.maxSize
+  # records, a burst of stack traces can exceed the 4 MiB gRPC default
+  maxRecvMsgSizeMib: 64
+  # ClusterIP by default; LoadBalancer / annotations for SDKs outside the cluster
+  service:
+    type: ClusterIP
+    annotations: {}
+  # The gateway scrapes its own :8888 (service.name otel-gateway)
   selfMonitoring:
     enabled: true
-
-    # Host metrics receiver - collects system metrics (CPU, memory, disk, network)
-    hostmetrics:
-      enabled: true
-      collectionInterval: 15s
-      scrapers:
-        cpu: true
-        memory: true
-        disk: true
-        filesystem: true
-        network: true
-        load: true
-        processes: true
-
-    # Prometheus receiver - scrape collector's own metrics
-    prometheus:
-      enabled: true
-      scrapeInterval: 15s
-      jobName: otel-collector
-      labels:
-        service: otel-collector
-        env: kubernetes
-
-# =============================================================================
-# Node Log Collector Configuration
-# =============================================================================
-logCollector:
-  # Optional DaemonSet for Kubernetes/ACK container stdout/stderr log collection.
-  # The main OTel Collector above remains the gateway; this collector tails node
-  # container logs and forwards them to the gateway through OTLP.
-  enabled: false
-  mode: containerStdout
-
-  image:
-    repository: otel/opentelemetry-collector-contrib
-    tag: "0.144.0"
-    pullPolicy: IfNotPresent
-
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
-      memory: "512Mi"
-
-  hostPaths:
-    containers: /var/log/containers
-    pods: /var/log/pods
-    # Optional for Docker runtime clusters where /var/log/pods/*.log points to
-    # /var/lib/docker/containers/*/*-json.log.
-    dockerContainers: ""
-
-  storage:
+  # PVC per replica: persisted sending queue (+ optional collector log files)
+  persistence:
     enabled: true
-    path: /var/lib/otelcol/file_storage
-    chown:
+    storageClass: ""
+    size: 10Gi
+    path: /var/lib/otelcol
+  logging:
+    level: info
+    format: json
+    fileOutput:
+      enabled: false
+  # Percent of the container memory limit (GOMEMLIMIT is set from the same limit)
+  memoryLimiter:
+    limitPercentage: 75
+    spikeLimitPercentage: 20
+  dorisExporter:
+    tables:
+      logs: otel_logs
+      traces: otel_traces
+      metrics: otel_metrics
+    createSchema: true
+    historyDays: 7
+    createHistoryDays: 1
+    replicationNum: 1
+    timeout: 60s
+    # How long a failing Stream Load batch is retried before it is dropped with an error
+    # log. Doris rejects a whole batch when one record is bad (e.g. no partition for its
+    # timestamp); unbounded retries would stall the pipeline behind it.
+    retryMaxElapsedTime: 10m
+    # exporterhelper queue + batching (the `batch` processor is deprecated upstream).
+    # sizer is items: queueSize >= batch.minSize (validated at render time)
+    sendingQueue:
       enabled: true
-      owner: "10001:10001"
-      image:
-        repository: busybox
-        tag: "1.36"
-        pullPolicy: IfNotPresent
+      numConsumers: 8
+      queueSize: 50000
+      batch:
+        flushTimeout: 5s
+        minSize: 8192
+        maxSize: 16384
+  # service_name is an indexed Doris column: derive it from the K8s workload when the
+  # source did not set service.name; Kubernetes Events have no workload and get a fixed name
+  serviceName:
+    deriveFromWorkload: true
+    kubernetesEvents: kubernetes-events
+  # Records whose timestamp falls outside Doris' partition window (older than
+  # createHistoryDays or in the future) are re-stamped with the receive time: logs keep the
+  # original in log.original_time_unix_nano, spans in span.original_start_time_unix_nano,
+  # metric datapoints are simply re-stamped. Without this, one such record (a backfilled
+  # old file, a wrong clock, a replayed trace) makes Doris reject the whole batch.
+  timeGuard:
+    enabled: true
+    # null = derived from dorisExporter.createHistoryDays (days * 86400 - 600)
+    maxPastSeconds: null
+    maxFutureSeconds: 300
+  debug:
+    enabled: false
+    verbosity: basic
+  extraConfig: {}
 
-  filelog:
-    include:
-      - /var/log/pods/*/*/*.log
-    exclude: []
-    startAt: end
-    pollInterval: 1s
-    fingerprintSize: 1kb
-    maxLogSize: 1MiB
-    maxConcurrentFiles: 1024
-    includeFilePathResolved: true
-    includeFileNameResolved: true
-    retryOnFailure:
-      enabled: true
-      initialInterval: 1s
-      maxInterval: 30s
-      maxElapsedTime: 0
-
-  export:
-    otlp:
-      # Defaults to the in-chart OTel Gateway service when empty.
-      endpoint: ""
-
-# =============================================================================
-# Grafana Configuration
-# =============================================================================
+# -----------------------------------------------------------------------------
+# Grafana
+# -----------------------------------------------------------------------------
 grafana:
   enabled: true
-
   image:
     tag: "11.4.0"
-
   adminUser: admin
   adminPassword: admin
-
-  # Plugins to install (doris-app is installed via initContainer)
-  plugins:
-    - grafana-clock-panel
-    - grafana-simple-json-datasource
-
+  # Existing Secret with keys admin-user / admin-password instead of the two values above
+  existingSecret: ""
+  # Plugins downloaded from the internet at start-up. Empty by default: the Doris app
+  # plugin is shipped in the dorisPlugin image and air-gapped clusters must not hang here.
+  plugins: []
+  env: {}
   service:
     type: ClusterIP
     port: 3000
-
   resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "500m"
-      memory: "512Mi"
-
+    requests: {cpu: "100m", memory: "128Mi"}
+    limits: {cpu: "500m", memory: "512Mi"}
   persistence:
     enabled: false
     size: 10Gi
     storageClassName: ""
 
-# =============================================================================
-# Doris App Plugin for Grafana
-# =============================================================================
 dorisPlugin:
   enabled: true
   pluginId: doris-app
-  # Plugin + Dashboards image (build from images/doris-plugin/)
   image:
     repository: velodb/doris-app-plugin
     tag: "latest"
     pullPolicy: IfNotPresent
 
-# =============================================================================
-# Ingress Configuration
-# =============================================================================
 ingress:
   enabled: false
   className: ""

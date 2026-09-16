@@ -41,9 +41,11 @@ spec:
                 port:
                   number: {{ $.Values.grafana.service.port }}
                 {{- else if eq .service "otel" }}
-                name: {{ include "aiobs.otel.fullname" $ }}
+                name: {{ include "aiobs.gateway.fullname" $ }}
                 port:
-                  number: {{ $.Values.otel.ports.otlpHttp }}
+                  number: {{ $.Values.gateway.ports.otlpHttp }}
+                {{- else }}
+                {{- fail (printf "ingress.hosts[].paths[].service %q is not one of grafana | otel" (toString .service)) }}
                 {{- end }}
           {{- end }}
     {{- end }}

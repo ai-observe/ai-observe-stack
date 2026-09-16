@@ -1,0 +1,18 @@
+# Smallest useful DOG Stack against an existing Doris cluster: gateway + Grafana.
+# Nothing is collected yet; anything that speaks OTLP can send to the gateway. To collect this
+# Kubernetes cluster install the dog-k8s-collector chart (examples/dog-k8s-collector/).
+#
+#   kubectl create secret generic doris-credentials --from-literal=username=otel --from-literal=password='***'
+#   helm install dog ./ai-observe-stack -n dog --create-namespace -f examples/ai-observe-stack/minimal-external-doris.yaml
+
+
+doris:
+  mode: external
+  external:
+    host: doris-fe.doris.svc.cluster.local
+    port: 9030
+    feHttpPort: 8030
+    existingSecret: doris-credentials   # keys: username, password
+  internal:
+    operator:
+      enabled: false

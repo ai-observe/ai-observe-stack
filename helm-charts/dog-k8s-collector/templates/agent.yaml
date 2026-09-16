@@ -1,0 +1,212 @@
+{{/*
+Node agent DaemonSet + RBAC. Configuration is in configmap-agent.yaml.
+*/}}
+{{- include "dogc.validate" . -}}
+{{- if include "dogc.agent.enabled" . | eq "true" }}
+{{- $a := .Values.agent }}
+{{- $p := .Values.presets }}
+{{- $logs := .Values.logs }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "dogc.agent.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "dogc.agent.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+rules:
+  # k8s_attributes / resource_detection(k8s_api): pod, namespace, node metadata
+  - apiGroups: [""]
+    resources: [pods, namespaces, nodes]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [replicasets, deployments, statefulsets, daemonsets]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  {{- if $p.kubeletMetrics.enabled }}
+  # kubelet_stats
+  - apiGroups: [""]
+    resources: [nodes/stats, nodes/proxy]
+    verbs: [get]
+  - apiGroups: [""]
+    resources: [persistentvolumeclaims, persistentvolumes]
+    verbs: [get, list, watch]
+  {{- end }}
+  {{- if or $p.prometheusScrape.enabled $p.prometheusScrape.extraScrapeConfigs }}
+  # prometheus kubernetes_sd
+  - apiGroups: [""]
+    resources: [services, endpoints]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "dogc.agent.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "dogc.agent.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "dogc.agent.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "dogc.agent.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "dogc.name" . }}-agent
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 10%
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "dogc.name" . }}-agent
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: agent
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-agent.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "dogc.agent.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if and $p.hostMetrics.enabled $p.hostMetrics.processes }}
+      hostPID: true
+      {{- end }}
+      {{- with $a.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with $a.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $a.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: agent
+          image: "{{ $a.image.repository }}:{{ $a.image.tag }}"
+          imagePullPolicy: {{ $a.image.pullPolicy }}
+          args: ["--config=/etc/otelcol/config.yaml"]
+          # root: /var/log/pods files are root:0640; journald needs DAC_READ_SEARCH + SYS_PTRACE
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            {{- if $p.journald.enabled }}
+            capabilities:
+              add: [DAC_READ_SEARCH, SYS_PTRACE]
+            {{- end }}
+          env:
+            - name: K8S_NODE_NAME
+              valueFrom: {fieldRef: {fieldPath: spec.nodeName}}
+            - name: K8S_NODE_IP
+              valueFrom: {fieldRef: {fieldPath: status.hostIP}}
+            - name: K8S_POD_IP
+              valueFrom: {fieldRef: {fieldPath: status.podIP}}
+            - name: K8S_NAMESPACE
+              valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+            - name: GOMEMLIMIT
+              valueFrom: {resourceFieldRef: {resource: limits.memory}}
+          ports:
+            - {name: health-check, containerPort: 13133}
+            - {name: metrics, containerPort: 8888}
+            {{- if $p.otlp.enabled }}
+            - name: otlp-grpc
+              containerPort: 4317
+              {{- if $p.otlp.hostPortGrpc }}
+              hostPort: {{ $p.otlp.hostPortGrpc }}
+              {{- end }}
+            - name: otlp-http
+              containerPort: 4318
+              {{- if $p.otlp.hostPortHttp }}
+              hostPort: {{ $p.otlp.hostPortHttp }}
+              {{- end }}
+            {{- end }}
+          livenessProbe:
+            httpGet: {path: /, port: health-check}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /, port: health-check}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml $a.resources | nindent 12 }}
+          volumeMounts:
+            - {name: config, mountPath: /etc/otelcol, readOnly: true}
+            {{- if $p.logsCollection.enabled }}
+            - {name: varlogpods, mountPath: /var/log/pods, readOnly: true}
+            {{- if $logs.dockerContainersPath }}
+            - {name: dockercontainers, mountPath: {{ $logs.dockerContainersPath }}, readOnly: true}
+            {{- end }}
+            {{- end }}
+            {{- if $p.journald.enabled }}
+            - {name: journal, mountPath: {{ $p.journald.directory }}, readOnly: true}
+            {{- end }}
+            {{- if $p.hostMetrics.enabled }}
+            - {name: hostfs, mountPath: /hostfs, readOnly: true, mountPropagation: HostToContainer}
+            {{- end }}
+            {{- if $a.storage.enabled }}
+            - {name: file-storage, mountPath: /var/lib/otelcol}
+            {{- end }}
+            {{- if and $p.logsCollection.enabled $a.tzdata.hostPath }}
+            - {name: zoneinfo, mountPath: /usr/share/zoneinfo, readOnly: true}
+            {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "dogc.agent.fullname" . }}-config
+        {{- if $p.logsCollection.enabled }}
+        - name: varlogpods
+          hostPath: {path: /var/log/pods, type: Directory}
+        {{- if $logs.dockerContainersPath }}
+        - name: dockercontainers
+          hostPath: {path: {{ $logs.dockerContainersPath }}, type: Directory}
+        {{- end }}
+        {{- end }}
+        {{- if $p.journald.enabled }}
+        - name: journal
+          hostPath: {path: {{ $p.journald.directory }}, type: Directory}
+        {{- end }}
+        {{- if $p.hostMetrics.enabled }}
+        - name: hostfs
+          hostPath: {path: /}
+        {{- end }}
+        {{- if $a.storage.enabled }}
+        - name: file-storage
+          hostPath: {path: {{ $a.storage.hostPath }}, type: DirectoryOrCreate}
+        {{- end }}
+        {{- if and $p.logsCollection.enabled $a.tzdata.hostPath }}
+        - name: zoneinfo
+          hostPath: {path: {{ $a.tzdata.hostPath }}, type: Directory}   # Pending with a clear event on nodes without tzdata, instead of a crashloop
+        {{- end }}
+{{- end }}

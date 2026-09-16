@@ -16,10 +16,10 @@ spec:
   feSpec:
     replicas: {{ .Values.doris.internal.cluster.fe.replicas }}
     image: {{ .Values.doris.internal.cluster.fe.image }}
-    {{- if and .Values.openObservabilityStack.timezone (ne .Values.openObservabilityStack.timezone "UTC") }}
+    {{- if and .Values.global.timezone (ne .Values.global.timezone "UTC") }}
     envVars:
       - name: TZ
-        value: {{ .Values.openObservabilityStack.timezone | quote }}
+        value: {{ .Values.global.timezone | quote }}
     {{- end }}
     {{- with .Values.doris.internal.cluster.fe.resources }}
     requests:
@@ -52,10 +52,10 @@ spec:
   beSpec:
     replicas: {{ .Values.doris.internal.cluster.be.replicas }}
     image: {{ .Values.doris.internal.cluster.be.image }}
-    {{- if and .Values.openObservabilityStack.timezone (ne .Values.openObservabilityStack.timezone "UTC") }}
+    {{- if and .Values.global.timezone (ne .Values.global.timezone "UTC") }}
     envVars:
       - name: TZ
-        value: {{ .Values.openObservabilityStack.timezone | quote }}
+        value: {{ .Values.global.timezone | quote }}
     {{- end }}
     {{- with .Values.doris.internal.cluster.be.resources }}
     requests:

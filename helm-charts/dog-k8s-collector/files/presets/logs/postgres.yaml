@@ -1,0 +1,17 @@
+# PostgreSQL with the default log_line_prefix of the official image ("%m [%p] "):
+# "2026-09-05 14:37:58.611 UTC [52] LOG:  checkpoint starting: time"
+# Also accepts "%m [%p] %u@%d " prefixes.
+format: regex
+regex: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) (?P<tz>[A-Z]{2,5}) \[(?P<pid>\d+)\] (?:(?P<user>[^@\s]+)@(?P<db>\S+) )?(?P<level>[A-Z]+):\s*(?P<msg>(?s:.*))$'
+multiline:
+  firstLinePattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} [A-Z]'
+timestamp:
+  layout: "%Y-%m-%d %H:%M:%S.%L"
+severity:
+  field: level
+  mapping:
+    debug: [DEBUG1, DEBUG2, DEBUG3, DEBUG4, DEBUG5]
+    info: [LOG, INFO, NOTICE, STATEMENT, DETAIL, HINT, CONTEXT, QUERY]
+    warn: [WARNING]
+    error: [ERROR]
+    fatal: [FATAL, PANIC]

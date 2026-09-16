@@ -1,0 +1,12 @@
+# Spring Boot 3 default console layout:
+# "2026-09-10T10:00:00.123+08:00  INFO 1 --- [main] c.e.Application : Started Application in 2.1 seconds"
+# Continuation lines (stack traces) do not start with a date.
+format: regex
+regex: '^(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(?:[+-]\d{2}:\d{2}|Z))\s+(?P<level>[A-Z]+)\s+(?P<pid>\d+)\s+---\s+\[\s*(?P<thread>[^\]]*)\]\s+(?P<logger>\S+)\s+:\s?(?P<msg>(?s:.*))$'
+multiline:
+  firstLinePattern: '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}'
+timestamp:
+  layoutType: gotime
+  layout: "2006-01-02T15:04:05.000Z07:00"
+severity:
+  field: level

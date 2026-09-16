@@ -1,0 +1,8 @@
+# nginx error log: "2026/09/10 10:00:00 [error] 29#29: *1 open() failed ..., client: 10.0.0.1"
+format: regex
+regex: '^(?P<ts>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}) \[(?P<level>\w+)\] (?P<pid>\d+)#(?P<tid>\d+): (?:\*(?P<cid>\d+) )?(?P<msg>(?s:.*))$'
+timestamp:
+  layout: "%Y/%m/%d %H:%M:%S"
+severity:
+  field: level
+  mapping: {info: [notice], error: [crit, alert, emerg]}

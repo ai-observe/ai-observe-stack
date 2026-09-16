@@ -1,9 +1,10 @@
 apiVersion: v2
 name: ai-observe-stack
-description: AIObserve Stack - A complete observability stack using Apache Doris as the storage backend for traces, metrics, and logs, with OpenTelemetry and Grafana.
+description: AIObserve Stack (DOG Stack) - an observability backend with Apache Doris as storage for logs, metrics and traces, an OpenTelemetry gateway and Grafana. Collect Kubernetes clusters with the dog-k8s-collector chart.
 type: application
-version: 0.1.3
-appVersion: "0.1.0"
+version: 0.2.0
+# appVersion tracks the OpenTelemetry Collector shipped by the chart
+appVersion: "0.160.0"
 
 keywords:
   - observability

@@ -1,0 +1,73 @@
+# Production DOG Stack: HA Doris via the operator, three gateways with persisted queues,
+# no debug exporter, ingress with TLS (Grafana and the OTLP/HTTP entry point).
+
+doris:
+  mode: internal
+  internal:
+    operator:
+      enabled: true
+    cluster:
+      fe:
+        replicas: 3
+        resources:
+          requests: {cpu: 4, memory: 8Gi}
+          limits: {cpu: 8, memory: 16Gi}
+      be:
+        replicas: 3
+        resources:
+          requests: {cpu: 4, memory: 16Gi}
+          limits: {cpu: 16, memory: 64Gi}
+      persistence:
+        enabled: true
+        storageClass: gp3
+        fe: {size: 100Gi}
+        be: {size: 500Gi}
+
+gateway:
+  replicas: 3
+  persistence:
+    enabled: true
+    storageClass: gp3
+    size: 50Gi
+  resources:
+    requests: {cpu: "500m", memory: "1Gi"}
+    limits: {cpu: "2", memory: "2Gi"}
+  dorisExporter:
+    replicationNum: 3
+    historyDays: 30
+    createHistoryDays: 7
+    sendingQueue:
+      numConsumers: 16
+      queueSize: 100000
+      batch: {flushTimeout: 5s, minSize: 8192, maxSize: 16384}
+  debug:
+    enabled: false
+
+# Collecting the cluster itself is the dog-k8s-collector chart: see examples/dog-k8s-collector/.
+
+grafana:
+  adminPassword: "CHANGE_ME"
+  persistence:
+    enabled: true
+    size: 50Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: aiobs.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: grafana
+    - host: otlp.example.com          # OTLP/HTTP for SDKs outside the cluster
+      paths:
+        - path: /
+          pathType: Prefix
+          service: otel
+  tls:
+    - secretName: aiobs-tls
+      hosts: [aiobs.example.com, otlp.example.com]

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "AIObserve Stack values",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "imagePullSecrets": {"type": "array"},
+        "timezone": {"type": "string"},
+        "clusterName": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+        "platform": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"}
+      },
+      "additionalProperties": false
+    },
+    "nameOverride": {"type": "string"},
+    "fullnameOverride": {"type": "string"},
+    "dorisOperator": {"type": "object"},
+    "doris": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {"type": "string", "enum": ["internal", "external"]},
+        "database": {"type": "string"},
+        "internal": {"type": "object", "additionalProperties": false, "properties": {"operator": {"type": "object", "properties": {"enabled": {"type": "boolean"}}}, "cluster": {"type": "object", "additionalProperties": false, "properties": {"fe": {"type": "object"}, "be": {"type": "object"}, "persistence": {"type": "object"}}}}},
+        "external": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "host": {"type": "string"},
+            "port": {"type": "integer"},
+            "feHttpPort": {"type": "integer"},
+            "user": {"type": "string"},
+            "password": {"type": "string"},
+            "existingSecret": {"type": "string"},
+            "userKey": {"type": "string"},
+            "passwordKey": {"type": "string"}
+          }
+        }
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "image": {"type": "object"},
+        "replicas": {"type": "integer"},
+        "podManagementPolicy": {"type": "string"},
+        "resources": {"type": "object"},
+        "nodeSelector": {"type": "object"},
+        "tolerations": {"type": "array"},
+        "affinity": {"type": "object"},
+        "priorityClassName": {"type": "string"},
+        "podSecurityContext": {"type": "object"},
+        "ports": {"type": "object"},
+        "maxRecvMsgSizeMib": {"type": "integer"},
+        "service": {"type": "object"},
+        "selfMonitoring": {"type": "object"},
+        "persistence": {"type": "object"},
+        "logging": {"type": "object", "properties": {"level": {"type": "string"}, "format": {"type": "string", "enum": ["json", "console"]}, "fileOutput": {"type": "object"}}},
+        "memoryLimiter": {"type": "object", "properties": {"limitPercentage": {"type": "integer"}, "spikeLimitPercentage": {"type": "integer"}}},
+        "dorisExporter": {
+          "type": "object",
+          "properties": {
+            "tables": {"type": "object"},
+            "createSchema": {"type": "boolean"},
+            "historyDays": {"type": "integer"},
+            "createHistoryDays": {"type": "integer"},
+            "replicationNum": {"type": "integer"},
+            "timeout": {"type": "string"},
+            "retryMaxElapsedTime": {"type": "string"},
+            "sendingQueue": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "numConsumers": {"type": "integer"}, "queueSize": {"type": "integer"}, "batch": {"type": "object", "properties": {"flushTimeout": {"type": "string"}, "minSize": {"type": "integer"}, "maxSize": {"type": "integer"}}}}}
+          }
+        },
+        "serviceName": {"type": "object"},
+        "timeGuard": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "maxPastSeconds": {"type": ["integer", "null"]}, "maxFutureSeconds": {"type": "integer"}}},
+        "debug": {"type": "object"},
+        "extraConfig": {"type": "object"}
+      }
+    },
+    "grafana": {"type": "object", "additionalProperties": false, "properties": {"enabled": {"type": "boolean"}, "image": {"type": "object"}, "adminUser": {"type": "string"}, "adminPassword": {"type": "string"}, "existingSecret": {"type": "string"}, "plugins": {"type": "array"}, "env": {"type": "object"}, "service": {"type": "object"}, "resources": {"type": "object"}, "persistence": {"type": "object"}}},
+    "dorisPlugin": {"type": "object", "additionalProperties": false, "properties": {"enabled": {"type": "boolean"}, "pluginId": {"type": "string"}, "image": {"type": "object"}}},
+    "ingress": {"type": "object", "additionalProperties": false, "properties": {"enabled": {"type": "boolean"}, "className": {"type": "string"}, "annotations": {"type": "object"}, "hosts": {"type": "array"}, "tls": {"type": "array"}}},
+    "agent": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "cluster": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "collectors": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "logs": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "metrics": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "events": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "otlp": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "journald": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "kubernetesAttributes": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "resourceDetection": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "clusterName": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "platform": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "presets": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
+    "otel": {"description": "chart 0.1.x key, rejected with a migration hint by the templates"},
+    "logCollector": {"description": "chart 0.1.x key, rejected with a migration hint by the templates"},
+    "openObservabilityStack": {"description": "chart 0.1.x key, rejected with a migration hint by the templates"}
+  }
+}

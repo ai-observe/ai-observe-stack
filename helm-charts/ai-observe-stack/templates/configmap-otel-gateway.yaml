@@ -1,0 +1,213 @@
+{{/*
+Gateway (aggregation / write tier) configuration.
+Receives OTLP from the collection layer and from SDKs, applies the transformations that
+belong to the Doris side, writes Doris. Never collects.
+*/}}
+{{- define "aiobs.gateway.config" -}}
+{{- $g := .Values.gateway -}}
+{{- /* past window defaults to the partition window the exporter guarantees: createHistoryDays * 1 day, minus a margin */ -}}
+{{- $maxPast := $g.timeGuard.maxPastSeconds | default (sub (mul (int $g.dorisExporter.createHistoryDays) 86400) 600) -}}
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:{{ $g.ports.otlpGrpc }}
+        max_recv_msg_size_mib: {{ $g.maxRecvMsgSizeMib | default 64 }}
+      http:
+        endpoint: 0.0.0.0:{{ $g.ports.otlpHttp }}
+  {{- if $g.selfMonitoring.enabled }}
+  prometheus/self:
+    config:
+      scrape_configs:
+        - job_name: otel-gateway
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['localhost:{{ $g.ports.metrics }}']
+  {{- end }}
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: {{ $g.memoryLimiter.limitPercentage }}
+    spike_limit_percentage: {{ $g.memoryLimiter.spikeLimitPercentage }}
+  transform:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          # Records that arrive straight from an SDK usually carry no observed time
+          # (only Collector receivers set it). Backfill it, everything below relies on it.
+          - set(observed_time_unix_nano, UnixNano(Now())) where observed_time_unix_nano == 0
+          # Doris partitions by timestamp; epoch-0 records have no partition
+          - set(time_unix_nano, observed_time_unix_nano) where time_unix_nano == 0
+          {{- if $g.timeGuard.enabled }}
+          # A record outside the partition window makes Doris reject the whole Stream Load
+          # batch, which then retries forever and stalls the pipeline. Clamp such timestamps
+          # to the observed time and keep the original in an attribute.
+          - set(attributes["log.original_time_unix_nano"], time_unix_nano) where time_unix_nano < observed_time_unix_nano - {{ $maxPast }}000000000 or time_unix_nano > observed_time_unix_nano + {{ $g.timeGuard.maxFutureSeconds }}000000000
+          - set(time_unix_nano, observed_time_unix_nano) where time_unix_nano < observed_time_unix_nano - {{ $maxPast }}000000000 or time_unix_nano > observed_time_unix_nano + {{ $g.timeGuard.maxFutureSeconds }}000000000
+          {{- end }}
+          {{- with $g.serviceName.kubernetesEvents }}
+          # Kubernetes Events (from dog-k8s-collector) are not emitted by a service
+          - set(resource.attributes["service.name"], {{ . | quote }}) where attributes["k8s.resource.name"] == "events" and resource.attributes["service.name"] == nil
+          {{- end }}
+      {{- if $g.serviceName.deriveFromWorkload }}
+      - context: resource
+        statements:
+          {{- include "aiobs.gateway.serviceNameStatements" . | trim | nindent 10 }}
+      {{- end }}
+    {{- if or $g.timeGuard.enabled $g.serviceName.deriveFromWorkload }}
+    metric_statements:
+      {{- if $g.timeGuard.enabled }}
+      - context: datapoint
+        statements:
+          # same partition-window protection for datapoints (metrics tables are partitioned by timestamp too)
+          - set(time_unix_nano, UnixNano(Now())) where time_unix_nano < UnixNano(Now()) - {{ $maxPast }}000000000 or time_unix_nano > UnixNano(Now()) + {{ $g.timeGuard.maxFutureSeconds }}000000000
+      {{- end }}
+      {{- if $g.serviceName.deriveFromWorkload }}
+      - context: resource
+        statements:
+          {{- include "aiobs.gateway.serviceNameStatements" . | trim | nindent 10 }}
+      {{- end }}
+    {{- end }}
+    {{- if or $g.timeGuard.enabled $g.serviceName.deriveFromWorkload }}
+    trace_statements:
+      {{- if $g.timeGuard.enabled }}
+      - context: span
+        statements:
+          # spans outside the window are re-stamped as a zero-length span at the receive time; the original start is kept
+          - set(attributes["span.original_start_time_unix_nano"], start_time_unix_nano) where start_time_unix_nano < UnixNano(Now()) - {{ $maxPast }}000000000 or start_time_unix_nano > UnixNano(Now()) + {{ $g.timeGuard.maxFutureSeconds }}000000000
+          - set(end_time_unix_nano, UnixNano(Now())) where start_time_unix_nano < UnixNano(Now()) - {{ $maxPast }}000000000 or start_time_unix_nano > UnixNano(Now()) + {{ $g.timeGuard.maxFutureSeconds }}000000000
+          - set(start_time_unix_nano, end_time_unix_nano) where attributes["span.original_start_time_unix_nano"] != nil
+      {{- end }}
+      {{- if $g.serviceName.deriveFromWorkload }}
+      - context: resource
+        statements:
+          {{- include "aiobs.gateway.serviceNameStatements" . | trim | nindent 10 }}
+      {{- end }}
+    {{- end }}
+
+exporters:
+  doris:
+    endpoint: {{ include "aiobs.doris.feHttpEndpoint" . }}
+    database: {{ include "aiobs.doris.database" . }}
+    username: ${env:DORIS_USERNAME}
+    password: ${env:DORIS_PASSWORD}
+    create_schema: {{ $g.dorisExporter.createSchema }}
+    mysql_endpoint: {{ include "aiobs.doris.mysqlEndpoint" . }}
+    table:
+      logs: {{ $g.dorisExporter.tables.logs }}
+      traces: {{ $g.dorisExporter.tables.traces }}
+      metrics: {{ $g.dorisExporter.tables.metrics }}
+    history_days: {{ $g.dorisExporter.historyDays }}
+    create_history_days: {{ $g.dorisExporter.createHistoryDays }}
+    replication_num: {{ $g.dorisExporter.replicationNum }}
+    timezone: {{ .Values.global.timezone }}
+    log_response: false
+    timeout: {{ $g.dorisExporter.timeout }}
+    # Bounded: a batch Doris keeps rejecting must eventually be dropped (and logged),
+    # otherwise it blocks every record behind it in the queue.
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: {{ $g.dorisExporter.retryMaxElapsedTime }}
+    sending_queue:
+      enabled: {{ $g.dorisExporter.sendingQueue.enabled }}
+      num_consumers: {{ $g.dorisExporter.sendingQueue.numConsumers }}
+      queue_size: {{ $g.dorisExporter.sendingQueue.queueSize }}
+      sizer: items
+      block_on_overflow: true
+      {{- if $g.persistence.enabled }}
+      storage: file_storage
+      {{- end }}
+      batch:
+        flush_timeout: {{ $g.dorisExporter.sendingQueue.batch.flushTimeout }}
+        min_size: {{ $g.dorisExporter.sendingQueue.batch.minSize }}
+        max_size: {{ $g.dorisExporter.sendingQueue.batch.maxSize }}
+        sizer: items
+  {{- if $g.debug.enabled }}
+  debug:
+    verbosity: {{ $g.debug.verbosity }}
+    sampling_initial: 5
+    sampling_thereafter: 200
+  {{- end }}
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:{{ $g.ports.healthCheck }}
+    path: "/"
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679
+  {{- if $g.persistence.enabled }}
+  file_storage:
+    directory: {{ $g.persistence.path }}/file_storage
+    create_directory: true
+    compaction:
+      on_start: true
+      on_rebound: true
+      directory: {{ $g.persistence.path }}/file_storage/tmp
+  {{- end }}
+
+service:
+  extensions: [health_check, pprof, zpages{{ if $g.persistence.enabled }}, file_storage{{ end }}]
+  telemetry:
+    logs:
+      level: {{ $g.logging.level }}
+      encoding: {{ $g.logging.format }}
+      {{- if and $g.persistence.enabled $g.logging.fileOutput.enabled }}
+      output_paths: [stdout, {{ $g.persistence.path }}/collector.log]
+      error_output_paths: [stderr, {{ $g.persistence.path }}/collector-error.log]
+      {{- end }}
+    metrics:
+      level: detailed
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: "0.0.0.0"
+                port: {{ $g.ports.metrics }}
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, transform]
+      exporters: [doris{{ if $g.debug.enabled }}, debug{{ end }}]
+    metrics:
+      receivers: [otlp{{ if $g.selfMonitoring.enabled }}, prometheus/self{{ end }}]
+      processors: [memory_limiter, transform]
+      exporters: [doris{{ if $g.debug.enabled }}, debug{{ end }}]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, transform]
+      exporters: [doris{{ if $g.debug.enabled }}, debug{{ end }}]
+{{- end }}
+
+{{- define "aiobs.gateway.serviceNameStatements" -}}
+{{- range $w := list "k8s.deployment.name" "k8s.statefulset.name" "k8s.daemonset.name" "k8s.cronjob.name" "k8s.job.name" "k8s.pod.name" }}
+- set(attributes["service.name"], attributes["{{ $w }}"]) where attributes["service.name"] == nil and attributes["{{ $w }}"] != nil
+{{- end }}
+{{- end }}
+
+{{- if .Values.gateway.enabled }}
+{{- $raw := include "aiobs.gateway.config" . }}
+{{- $cfg := $raw | fromYaml }}
+{{- if hasKey $cfg "Error" }}{{ fail (printf "gateway config template did not render valid YAML: %s" (get $cfg "Error")) }}{{ end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aiobs.gateway.fullname" . }}-config
+  labels:
+    {{- include "aiobs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: otel-gateway
+data:
+  config.yaml: |
+    # OpenTelemetry Gateway - generated by the AIObserve Stack chart
+    {{- if .Values.gateway.extraConfig }}
+    {{- /* merging loses comments and ordering; only done when there is something to merge */}}
+    {{- mergeOverwrite $cfg .Values.gateway.extraConfig | toYaml | nindent 4 }}
+    {{- else }}
+    {{- $raw | nindent 4 }}
+    {{- end }}
+{{- end }}

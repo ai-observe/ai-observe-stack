@@ -1,0 +1,11 @@
+# Python logging basicConfig with "%(asctime)s - %(name)s - %(levelname)s - %(message)s":
+# "2026-09-10 10:00:00,123 - app.worker - WARNING - queue is full"
+format: regex
+regex: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) - (?P<logger>\S+) - (?P<level>[A-Z]+) - (?P<msg>(?s:.*))$'
+multiline:
+  firstLinePattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - '
+timestamp:
+  layout: "%Y-%m-%d %H:%M:%S,%L"
+severity:
+  field: level
+  mapping: {warn: [WARNING], fatal: [CRITICAL]}

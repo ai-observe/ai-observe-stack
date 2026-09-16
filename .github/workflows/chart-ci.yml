@@ -1,0 +1,82 @@
+name: helm-chart
+
+on:
+  push:
+    paths: ["helm-charts/**", ".github/workflows/chart-ci.yml"]
+  pull_request:
+    paths: ["helm-charts/**", ".github/workflows/chart-ci.yml"]
+
+env:
+  CHART: helm-charts/ai-observe-stack
+  COLLECTOR: helm-charts/dog-k8s-collector
+  OTEL_VERSION: "0.160.0"
+
+jobs:
+  lint-template-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.0
+      - name: Dependencies
+        run: helm dependency build "$CHART"
+      - name: Lint (defaults and every example)
+        run: |
+          helm lint "$CHART"
+          for f in helm-charts/examples/ai-observe-stack/*.yaml helm-charts/examples/dog-k8s-collector/litefuse/dog-values.yaml; do
+            echo "== $f"; helm lint "$CHART" -f "$f"
+          done
+          helm lint "$COLLECTOR" --set gateway.endpoint=gw:4317
+          for f in helm-charts/examples/dog-k8s-collector/*.yaml helm-charts/examples/dog-k8s-collector/litefuse/collector-values.yaml helm-charts/examples/dog-k8s-collector/kubectl/values.yaml; do
+            echo "== $f"; helm lint "$COLLECTOR" -f "$f"
+          done
+      - name: Values schema rejects 0.1.x keys
+        run: |
+          if helm template t "$CHART" --set otel.enabled=true >/dev/null 2>&1; then
+            echo "expected a validation failure for legacy key 'otel'"; exit 1
+          fi
+          helm template t "$CHART" --set otel.enabled=true 2>&1 | grep -q 'is from chart 0.1.x' || { echo "legacy-key hint missing"; exit 1; }
+      - name: kubectl manifest is in sync with the chart
+        run: |
+          helm-charts/examples/dog-k8s-collector/kubectl/render.sh
+          git diff --exit-code -- helm-charts/examples/dog-k8s-collector/kubectl/collectors.yaml
+      - name: Render and extract collector configs
+        run: |
+          mkdir -p out
+          for f in helm-charts/examples/ai-observe-stack/*.yaml helm-charts/examples/dog-k8s-collector/litefuse/dog-values.yaml; do
+            name=dog-$(basename "$f" .yaml)
+            helm template dog "$CHART" -n dog -f "$f" --set doris.external.host=doris-fe.doris.svc --show-only templates/configmap-otel-gateway.yaml \
+              | yq '.data["config.yaml"]' > "out/$name.gateway.yaml"; echo "extracted $name gateway"
+          done
+          for f in helm-charts/examples/dog-k8s-collector/*.yaml helm-charts/examples/dog-k8s-collector/litefuse/collector-values.yaml helm-charts/examples/dog-k8s-collector/kubectl/values.yaml; do
+            name=collector-$(basename "$f" .yaml)
+            for t in agent cluster; do
+              helm template dog-k8s-collector "$COLLECTOR" -n dog -f "$f" --show-only templates/configmap-$t.yaml \
+                | yq '.data["config.yaml"]' > "out/$name.$t.yaml"; echo "extracted $name $t"
+            done
+          done
+      - name: Fake in-cluster credentials for validate
+        run: |
+          mkdir -p sa && openssl req -x509 -newkey rsa:2048 -nodes -subj "/CN=ci" -keyout sa/key.pem -out sa/ca.crt -days 1 >/dev/null 2>&1
+          echo ci-token > sa/token; echo dog > sa/namespace
+      - name: Validate rendered configs with the real collector binaries
+        run: |
+          set -e
+          for cfg in out/*.agent.yaml out/*.cluster.yaml; do
+            echo "== $cfg"
+            docker run --rm -v "$PWD/out:/cfg:ro" -v "$PWD/sa:/var/run/secrets/kubernetes.io/serviceaccount:ro" -v /:/hostfs:ro -v /usr/share/zoneinfo:/usr/share/zoneinfo:ro \
+              -e KUBERNETES_SERVICE_HOST=10.0.0.1 -e KUBERNETES_SERVICE_PORT=443 -e K8S_NODE_NAME=ci -e K8S_NODE_IP=10.0.0.2 -e K8S_NAMESPACE=dog \
+              "otel/opentelemetry-collector-k8s:${OTEL_VERSION}" validate --config="/cfg/$(basename "$cfg")"
+          done
+          for cfg in out/*.gateway.yaml; do
+            echo "== $cfg"
+            docker run --rm -v "$PWD/out:/cfg:ro" -e DORIS_USERNAME=root -e DORIS_PASSWORD= \
+              "otel/opentelemetry-collector-contrib:${OTEL_VERSION}" validate --config="/cfg/$(basename "$cfg")"
+          done
+      - name: Upload rendered manifests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered
+          path: out/

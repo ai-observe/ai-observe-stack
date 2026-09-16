@@ -1,0 +1,10 @@
+# Apache Doris FE audit log (same stream as the runtime log): "AuditLogger 2026-09-10 02:45:19,580 [query] |QueryId=...|User=admin|..."
+format: regex
+selector:
+  bodyPrefix: '^AuditLogger '
+regex: '^AuditLogger (?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}) \[(?P<audit_type>\w+)\]\s?\|?(?P<msg>(?s:.*))$'
+timestamp:
+  layout: "%Y-%m-%d %H:%M:%S,%L"
+severity:
+  field: audit_type
+  mapping: {info: [query, load, stream_load, slow_query, insert]}

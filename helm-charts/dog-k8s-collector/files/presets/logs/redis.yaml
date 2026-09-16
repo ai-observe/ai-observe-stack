@@ -1,0 +1,9 @@
+# Redis / Valkey: "1:M 09 Sep 2026 09:45:39.847 * Background saving terminated with success"
+# role: M master, S replica, C child, X sentinel; level: . debug, - verbose, * notice, # warning
+format: regex
+regex: '^(?P<pid>\d+):(?P<role>[MSCX]) (?P<ts>\d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}\.\d{3}) (?P<level>[.\-*#]) (?P<msg>(?s:.*))$'
+timestamp:
+  layout: "%d %b %Y %H:%M:%S.%L"
+severity:
+  field: level
+  mapping: {debug: ["."], info: ["-", "*"], warn: ["#"]}

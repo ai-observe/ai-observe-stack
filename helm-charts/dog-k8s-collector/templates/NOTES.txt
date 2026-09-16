@@ -1,0 +1,26 @@
+dog-k8s-collector {{ .Chart.Version }} installed as release {{ .Release.Name }} in namespace {{ .Release.Namespace }}.
+
+Sending to gateway {{ include "dogc.gateway.endpoint" . }} as cluster {{ include "dogc.clusterName" . }} (platform {{ .Values.platform }}).
+{{- if include "dogc.agent.enabled" . | eq "true" }}
+  agent (DaemonSet)    {{ include "dogc.agent.fullname" . }}
+    {{ if .Values.presets.logsCollection.enabled }}logs: namespaces {{ .Values.logs.namespaces.include | join "," }}{{ if .Values.logs.namespaces.exclude }} minus {{ .Values.logs.namespaces.exclude | join "," }}{{ end }}, {{ len .Values.logs.rules }} rule(s){{ if .Values.logs.json.autodetect }}, JSON auto-detect{{ end }}; {{ end }}{{ if .Values.presets.kubeletMetrics.enabled }}kubelet {{ end }}{{ if .Values.presets.hostMetrics.enabled }}host {{ end }}{{ if .Values.presets.prometheusScrape.enabled }}prometheus {{ end }}{{ if .Values.presets.otlp.enabled }}otlp {{ end }}{{ if .Values.presets.journald.enabled }}journald{{ end }}
+{{- end }}
+{{- if include "dogc.cluster.enabled" . | eq "true" }}
+  cluster (Deployment) {{ include "dogc.cluster.fullname" . }}
+    {{ if .Values.presets.clusterMetrics.enabled }}cluster metrics{{ end }}{{ if .Values.presets.kubernetesEvents.enabled }}, events{{ end }}
+{{- end }}
+
+Verify
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- if include "dogc.agent.enabled" . | eq "true" }}
+  kubectl logs -n {{ .Release.Namespace }} ds/{{ include "dogc.agent.fullname" . }} | grep '"level":"error"'
+  - the agent runs as root and mounts /var/log/pods: PodSecurity "restricted" namespaces must be labelled privileged
+{{- end }}
+{{- if include "dogc.cluster.enabled" . | eq "true" }}
+  kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "dogc.cluster.fullname" . }} | grep '"level":"error"'
+{{- end }}
+  then the DOG Stack's Grafana: Logs Explorer{{ if .Values.presets.kubernetesEvents.enabled }}, Kubernetes Events{{ end }}{{ if or .Values.presets.kubeletMetrics.enabled .Values.presets.clusterMetrics.enabled }}, K8s Observability{{ end }};
+  or in Doris (database as configured on the DOG Stack, `otel` by default):
+  select service_name, count(*) from otel_logs where timestamp > now() - interval 5 minute group by 1
+
+Docs: USER_GUIDE.md (log rules, presets, scaling), README.md

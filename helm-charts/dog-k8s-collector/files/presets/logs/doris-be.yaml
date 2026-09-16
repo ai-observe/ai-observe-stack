@@ -1,0 +1,12 @@
+# Apache Doris BE (glog with a four-digit year): "I20260909 09:45:27.241125 443 storage_engine.cpp:829] msg"
+# Some records (memory summaries) have an empty header message with the body on the next lines.
+# BE prints local container time without a zone: set timestamp.timezone if the container is not UTC.
+format: regex
+regex: '^(?P<level>[IWEF])(?P<ts>\d{8} \d{2}:\d{2}:\d{2}\.\d{6}) +(?P<tid>\d+) (?P<location>[^\]]+)\]\s?(?P<msg>(?s:.*))$'
+multiline:
+  firstLinePattern: '^[IWEF]\d{8} '
+timestamp:
+  layout: "%Y%m%d %H:%M:%S.%f"
+severity:
+  field: level
+  mapping: {info: [I], warn: [W], error: [E], fatal: [F]}

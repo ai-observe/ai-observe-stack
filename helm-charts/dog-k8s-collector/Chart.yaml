@@ -1,0 +1,13 @@
+apiVersion: v2
+name: dog-k8s-collector
+description: Collects a Kubernetes cluster into a DOG Stack (Doris + OpenTelemetry + Grafana) gateway - container logs with a rules engine and presets, kubelet / node / cluster metrics, Kubernetes Events.
+type: application
+version: 0.1.0
+# appVersion tracks the OpenTelemetry Collector shipped by the chart
+appVersion: "0.160.0"
+keywords: [observability, opentelemetry, kubernetes, logs, metrics, doris]
+home: https://github.com/ai-observe/ai-observe-stack
+icon: https://charts.velodb.io/images/doris.jpg
+maintainers:
+  - name: bingquanzhao
+    email: bingquan_zhao@icloud.com

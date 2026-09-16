@@ -1,0 +1,19 @@
+# dog-k8s-collector on Alibaba Cloud ACK. There is no cloud detector for ACK: the cluster
+# name comes from values. ACK nodes run containerd; nothing else differs from a generic
+# cluster.
+#
+#   helm install dog-k8s-collector ./dog-k8s-collector -n dog -f examples/dog-k8s-collector/platform-ack.yaml
+
+gateway:
+  endpoint: dog-ai-observe-stack-otel-gateway.dog.svc:4317
+
+clusterName: ack-prod
+platform: ack
+
+presets:
+  prometheusScrape:
+    enabled: true
+
+logs:
+  namespaces:
+    exclude: [kube-system, arms-prom]

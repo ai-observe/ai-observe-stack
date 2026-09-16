@@ -1,0 +1,444 @@
+{
+  "uid": "dog-logs-explorer",
+  "title": "Logs Explorer",
+  "tags": [
+    "dog-stack",
+    "logs"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "30s",
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "mysql",
+        "label": "Datasource",
+        "current": {
+          "text": "Doris",
+          "value": "doris"
+        },
+        "hide": 0
+      },
+      {
+        "name": "namespace",
+        "type": "query",
+        "label": "Namespace",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1,
+        "query": "SELECT DISTINCT CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) AS __text FROM otel.otel_logs WHERE timestamp >= NOW() - INTERVAL 6 HOUR AND resource_attributes['k8s.namespace.name'] IS NOT NULL ORDER BY 1",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "service",
+        "type": "query",
+        "label": "Service",
+        "datasource": {
+          "type": "mysql",
+          "uid": "${datasource}"
+        },
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 2,
+        "sort": 1,
+        "query": "SELECT DISTINCT service_name AS __text FROM otel.otel_logs WHERE timestamp >= NOW() - INTERVAL 6 HOUR AND service_name <> '' ORDER BY 1",
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "min_severity",
+        "type": "custom",
+        "label": "Min severity",
+        "query": "0 : all,5 : debug,9 : info,13 : warn,17 : error,21 : fatal",
+        "current": {
+          "text": "all",
+          "value": "0"
+        }
+      },
+      {
+        "name": "search",
+        "type": "textbox",
+        "label": "Body contains",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Records",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS records FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$' AND severity_number >= ${min_severity} AND body LIKE '%${search}%'"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Errors",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "value",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS errors FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND severity_number >= 17 AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$' AND body LIKE '%${search}%'"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Services",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(DISTINCT service_name) AS services FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$'"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Unparsed (no severity)",
+      "description": "Records that no rule parsed successfully: no severity was extracted (either no rule claimed them, or the claiming rule did not match). Events and JSON without a level field count too.",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "colorMode": "none",
+        "graphMode": "none"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT count(*) AS unparsed FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND severity_number = 0 AND log_attributes['k8s.resource.name'] IS NULL AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$'"
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "title": "Records by rule",
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COALESCE(CAST(log_attributes['dog.log.rule'] AS VARCHAR), '(none)') AS rule, count(*) AS records FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$' GROUP BY 1 ORDER BY 2 DESC LIMIT 12"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Volume by severity",
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "stacking": {
+              "mode": "normal"
+            },
+            "lineWidth": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "type": "byName",
+              "options": "error"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "type": "byName",
+              "options": "warn"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "type": "byName",
+              "options": "info"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "type": "byName",
+              "options": "debug"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "gray"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "type": "byName",
+              "options": "unset"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#888"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(timestamp) / 60) * 60) AS time, CASE WHEN severity_number >= 21 THEN 'fatal' WHEN severity_number >= 17 THEN 'error' WHEN severity_number >= 13 THEN 'warn' WHEN severity_number >= 9 THEN 'info' WHEN severity_number >= 1 THEN 'debug' ELSE 'unset' END AS metric, count(*) AS value FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$' AND severity_number >= ${min_severity} AND body LIKE '%${search}%' GROUP BY 1, 2 ORDER BY 1"
+        }
+      ]
+    },
+    {
+      "type": "bargauge",
+      "title": "Top services",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 4
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT service_name, count(*) AS records FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$' AND severity_number >= ${min_severity} AND body LIKE '%${search}%' GROUP BY 1 ORDER BY 2 DESC LIMIT 15"
+        }
+      ]
+    },
+    {
+      "type": "logs",
+      "title": "Logs",
+      "gridPos": {
+        "h": 18,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "datasource": {
+        "type": "mysql",
+        "uid": "${datasource}"
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "format": "logs",
+          "rawQuery": true,
+          "rawSql": "SELECT timestamp AS time, body AS message, severity_text AS level, service_name AS service, CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) AS namespace, CAST(resource_attributes['k8s.pod.name'] AS VARCHAR) AS pod, CAST(resource_attributes['k8s.container.name'] AS VARCHAR) AS container, CAST(log_attributes['dog.log.rule'] AS VARCHAR) AS rule FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(resource_attributes['k8s.namespace.name'] AS VARCHAR) REGEXP '^(${namespace:regex})$' AND service_name REGEXP '^(${service:regex})$' AND severity_number >= ${min_severity} AND body LIKE '%${search}%' ORDER BY timestamp DESC LIMIT 500"
+        }
+      ]
+    }
+  ]
+}
