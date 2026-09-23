@@ -7,7 +7,13 @@
 | 已经有一个在跑的 DOG Stack（自己用 chart 装的、别的方式部署的、或者在另一个集群） | [第一部分：部署 agent 和 cluster](#第一部分已经有-dog-stack部署-agent-和-cluster) |
 | 什么都没有，要从零拉起 | [第二部分：从零拉起 DOG Stack 和采集器](#第二部分没有-dog-stack从零拉起)，它做完后端会把你带回第一部分 |
 
-每一步都附带"你应该看到什么"，卡住时按第 1.8 节排查。所有命令假设你在仓库的 `helm-charts/` 目录下，用本地 chart 目录安装；用 Helm 仓库的话把 `./ai-observe-stack` 换成 `ai-observe-stack/ai-observe-stack`、`./dog-k8s-collector` 换成 `ai-observe-stack/dog-k8s-collector`。
+每一步都附带"你应该看到什么"，卡住时按第 1.8 节排查。所有命令假设你在仓库的 `helm-charts/` 目录下，用本地 chart 目录安装。先获取一次：
+
+```bash
+git clone https://github.com/ai-observe/ai-observe-stack.git
+cd ai-observe-stack/helm-charts
+helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；接入已有 Doris 时也需要
+```
 
 ## 0. 先认识两个 chart
 
@@ -330,6 +336,7 @@ helm uninstall dog-k8s-collector -n dog                                         
 | 现象 | 原因与处理 |
 |---|---|
 | `helm install` 报 `gateway.endpoint is required` | 没填 Gateway 地址，见 1.1 |
+| `helm install dog ./ai-observe-stack` 报 `missing in charts/ directory: doris-operator` | 没拉取 Doris Operator 子 chart；执行 `helm dependency build ./ai-observe-stack`（接入已有 Doris 时也需要） |
 | `helm install` 报 `additional properties 'xxx' not allowed` | 顶层键拼错。合法的顶层键：`gateway`、`clusterName`、`platform`、`timezone`、`imagePullSecrets`、`presets`、`logs`、`agent`、`cluster`、`nameOverride`、`fullnameOverride` |
 | agent Pod `CreateContainerConfigError` 或被 PodSecurity 拒绝 | 命名空间是 `restricted`，打 `privileged` 标签，见 1.2 |
 | agent 日志 `permission denied` `/var/log/pods` | 同上 |
@@ -361,7 +368,7 @@ kubectl get cm -n dog dog-k8s-collector-agent-config -o jsonpath='{.data.config\
 | | A：让 chart 部署 Doris | B：接入已有 Doris |
 |---|---|---|
 | 适合 | 试用、开发、没有现成 Doris | 已有 Doris / SelectDB 集群 |
-| 需要 | PersistentVolume 供应器；FE 和 BE 各至少 2 核 4 GiB；`helm dependency build`（拉 Doris Operator 子 chart）；一个集群只装一个 Operator，同集群第二套 DOG Stack 要设 `doris.internal.operator.enabled: false` | FE 的 9030（MySQL）和 8030（HTTP）从集群内可达；一个有 `CREATE DATABASE` 权限的账号 |
+| 需要 | PersistentVolume 供应器；FE 和 BE 各至少 2 核 4 GiB；一个集群只装一个 Operator，同集群第二套 DOG Stack 要设 `doris.internal.operator.enabled: false` | FE 的 9030（MySQL）和 8030（HTTP）从集群内可达；一个有 `CREATE DATABASE` 权限的账号 |
 | 数据在哪 | 集群内的 PVC | 你的 Doris |
 
 ### 2.2 安装 DOG Stack
@@ -369,7 +376,6 @@ kubectl get cm -n dog dog-k8s-collector-agent-config -o jsonpath='{.data.config\
 **路 A：chart 部署 Doris。** 开发规格用 `examples/ai-observe-stack/dev.yaml`（FE / BE 各 1 副本、2 核 4 GiB、不持久化、单 Gateway、debug 输出开）；生产规格用 `prod.yaml`（3 + 3 副本、持久化、3 个 Gateway、Ingress）。
 
 ```bash
-helm dependency build ./ai-observe-stack
 helm install dog ./ai-observe-stack -n dog --create-namespace -f examples/ai-observe-stack/dev.yaml
 ```
 
@@ -468,7 +474,7 @@ kubectl delete namespace demo
 | 数据保留 | `gateway.dorisExporter.historyDays` | 默认 7 天 |
 | Grafana 密码 | `grafana.adminPassword` 或 `grafana.existingSecret` | 默认 `admin` |
 | 对外访问 | `ingress`、`gateway.service.type` | Grafana 的域名；集群外 SDK 用 OTLP/HTTP 的 Ingress 路径或 LoadBalancer |
-| 私有镜像仓库 | `global.imagePullSecrets`（DOG）、`imagePullSecrets`（采集器）、各 `image.repository` | 两个 chart 分别设 |
+| 私有镜像仓库 | `global.imagePullSecrets`（DOG）、`imagePullSecrets`（采集器）、各 `image.repository`、`global.helperImages`（DOG chart 用到的 busybox 和 curl） | 两个 chart 分别设 |
 | 关掉演示输出 | `gateway.debug.enabled: false` | `dev.yaml` 里是开的，会打印采样数据 |
 | 采集范围 | `logs.namespaces.exclude` | 通常排除 `kube-system` |
 

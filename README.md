@@ -90,77 +90,82 @@ docker compose down -v
 
 # Kubernetes (Helm)
 
-Best for production deployments, development environments, and scalable setups.
-
-[AIObserve Stack Helm Chart](helm-charts/README.md)
+Best for production deployments, development environments, and scalable setups. Two charts: `ai-observe-stack` deploys the DOG Stack backend (OpenTelemetry gateway, Grafana, optionally Doris); `dog-k8s-collector` collects a Kubernetes cluster into it. The end-to-end guide is [helm-charts/GETTING_STARTED.md](helm-charts/GETTING_STARTED.md).
 
 ## Prerequisites
 
-- Kubernetes cluster (v1.20+)
-- Helm (v3.0+)
+- Kubernetes cluster (v1.24+)
+- Helm (v3.8+)
 - kubectl configured to access your cluster
-- PersistentVolume provisioner (for data persistence)
+- PersistentVolume provisioner (gateway queue; Doris when the chart deploys it)
 
 ## Deploy
 
-1. Add the AIObserve Stack Helm repository:
+1. Clone the repository and fetch the chart dependency (the Doris Operator subchart, required even with an existing Doris):
 
    ```bash
-   helm repo add ai-observe-stack https://charts.velodb.io
-   helm repo update
+   git clone https://github.com/ai-observe/ai-observe-stack.git
+   cd ai-observe-stack/helm-charts
+   helm dependency build ./ai-observe-stack
    ```
 
-2. Create a namespace for AIObserve Stack:
+2. Install the DOG Stack. With Doris deployed by the chart:
 
    ```bash
-   kubectl create namespace ai-observe-stack
+   helm install dog ./ai-observe-stack -n dog --create-namespace -f examples/ai-observe-stack/dev.yaml
    ```
 
-3. Install AIObserve Stack:
+   If you have an existing Doris cluster, put its account in a Secret and use external mode instead:
 
    ```bash
-   helm install my-aiobs ai-observe-stack/ai-observe-stack -n ai-observe-stack
-   ```
-
-   If you have an existing Doris cluster, use external mode instead:
-
-   ```bash
-   helm install my-aiobs ai-observe-stack/ai-observe-stack -n ai-observe-stack \
+   kubectl create namespace dog
+   kubectl create secret generic doris-credentials -n dog \
+     --from-literal=username=<DORIS_USER> --from-literal=password='<DORIS_PASSWORD>'
+   helm install dog ./ai-observe-stack -n dog \
      --set doris.mode=external \
      --set doris.external.host=<DORIS_FE_HOST> \
      --set doris.external.port=9030 \
      --set doris.external.feHttpPort=8030 \
+     --set doris.external.existingSecret=doris-credentials \
      --set doris.internal.operator.enabled=false
    ```
 
-4. Verify all pods are running:
+3. Verify:
 
    ```bash
-   kubectl get pods -n ai-observe-stack
+   kubectl get pods -n dog          # gateway, grafana (and Doris FE / BE with the chart-deployed Doris) Running
+   helm test dog -n dog --logs      # sends one log record through the gateway and checks Doris
    ```
 
-   Wait until all pods show `Running` status.
-
-5. Access Grafana:
+4. Access Grafana:
 
    ```bash
-   kubectl port-forward svc/my-aiobs-grafana 3000:3000 -n ai-observe-stack
+   kubectl port-forward -n dog svc/dog-ai-observe-stack-grafana 3000:3000
    ```
 
-   Open http://localhost:3000 and log in with `admin` / `admin`.
+   Open http://localhost:3000 and log in as `admin`; the password is in the Secret `dog-ai-observe-stack-grafana-admin` (default `admin`).
+
+5. Collect the Kubernetes cluster (container logs, kubelet / node / cluster metrics, Kubernetes Events):
+
+   ```bash
+   helm install dog-k8s-collector ./dog-k8s-collector -n dog \
+     --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
+     --set clusterName=my-cluster
+   ```
 
 ## Service endpoints
 
-| Service | Port-forward command |
+| Service | Address / port-forward command |
 |---------|---------------------|
-| Grafana | `kubectl port-forward svc/my-aiobs-grafana 3000:3000 -n ai-observe-stack` |
-| Doris FE UI | `kubectl port-forward svc/my-aiobs-doris-fe 8030:8030 -n ai-observe-stack` |
-| Doris MySQL | `kubectl port-forward svc/my-aiobs-doris-fe 9030:9030 -n ai-observe-stack` |
+| Grafana | `kubectl port-forward -n dog svc/dog-ai-observe-stack-grafana 3000:3000` |
+| OTLP gRPC / HTTP | `dog-ai-observe-stack-otel-gateway.dog.svc:4317` / `:4318` |
+| Doris FE UI (chart-deployed Doris) | `kubectl port-forward -n dog svc/dog-ai-observe-stack-doris-fe-service 8030:8030` |
+| Doris MySQL (chart-deployed Doris) | `kubectl port-forward -n dog svc/dog-ai-observe-stack-doris-fe-service 9030:9030` |
 
 ## Uninstall
 
 ```bash
-helm uninstall my-aiobs -n ai-observe-stack
-kubectl delete namespace ai-observe-stack
+helm uninstall dog-k8s-collector -n dog
+helm uninstall dog -n dog
+kubectl delete namespace dog
 ```
-

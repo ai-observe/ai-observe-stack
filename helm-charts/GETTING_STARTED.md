@@ -7,7 +7,13 @@ This guide walks the whole path: container logs, kubelet / node / cluster metric
 | A DOG Stack is already running (installed with the chart, deployed some other way, or in another cluster) | [Part 1: deploy the agent and cluster collector](#part-1-a-dog-stack-exists-deploy-the-agent-and-cluster-collector) |
 | Nothing yet, start from scratch | [Part 2: bring up the DOG Stack and the collector](#part-2-no-dog-stack-yet-bring-everything-up); once the backend is up it sends you back to Part 1 |
 
-Every step says what you should see; when stuck, use section 1.8. Commands assume you are in the repository's `helm-charts/` directory and install from the local chart directories; with the Helm repository, replace `./ai-observe-stack` by `ai-observe-stack/ai-observe-stack` and `./dog-k8s-collector` by `ai-observe-stack/dog-k8s-collector`.
+Every step says what you should see; when stuck, use section 1.8. Commands assume you are in the repository's `helm-charts/` directory and install from the local chart directories. Get them once:
+
+```bash
+git clone https://github.com/ai-observe/ai-observe-stack.git
+cd ai-observe-stack/helm-charts
+helm dependency build ./ai-observe-stack   # fetches the Doris Operator subchart; required even with an existing Doris
+```
 
 ## 0. The two charts
 
@@ -330,6 +336,7 @@ Uninstalling leaves the DOG Stack and the data in Doris untouched. `/var/lib/ote
 | Symptom | Cause and fix |
 |---|---|
 | `helm install` says `gateway.endpoint is required` | the gateway address is missing, see 1.1 |
+| `helm install dog ./ai-observe-stack` says `missing in charts/ directory: doris-operator` | the Doris Operator subchart was not fetched; run `helm dependency build ./ai-observe-stack` (needed with an existing Doris too) |
 | `helm install` says `additional properties 'xxx' not allowed` | a top-level key is misspelt. Valid top-level keys: `gateway`, `clusterName`, `platform`, `timezone`, `imagePullSecrets`, `presets`, `logs`, `agent`, `cluster`, `nameOverride`, `fullnameOverride` |
 | agent pod `CreateContainerConfigError` or rejected by PodSecurity | the namespace enforces `restricted`; add the `privileged` label, see 1.2 |
 | agent log `permission denied` on `/var/log/pods` | same |
@@ -361,7 +368,7 @@ Two paths, pick one:
 | | A: the chart deploys Doris | B: an existing Doris |
 |---|---|---|
 | For | trials, development, no Doris around | an existing Doris / SelectDB cluster |
-| Needs | a PersistentVolume provisioner; at least 2 CPU / 4 GiB each for FE and BE; `helm dependency build` (pulls the Doris Operator subchart); one operator per cluster, a second DOG Stack in the same cluster sets `doris.internal.operator.enabled: false` | FE ports 9030 (MySQL) and 8030 (HTTP) reachable from the cluster; an account with `CREATE DATABASE` |
+| Needs | a PersistentVolume provisioner; at least 2 CPU / 4 GiB each for FE and BE; one operator per cluster, a second DOG Stack in the same cluster sets `doris.internal.operator.enabled: false` | FE ports 9030 (MySQL) and 8030 (HTTP) reachable from the cluster; an account with `CREATE DATABASE` |
 | Data lives | in PVCs inside the cluster | in your Doris |
 
 ### 2.2 Install the DOG Stack
@@ -369,7 +376,6 @@ Two paths, pick one:
 **Path A: the chart deploys Doris.** Development size is `examples/ai-observe-stack/dev.yaml` (FE / BE one replica each, 2 CPU / 4 GiB, no persistence, one gateway, debug output on); production size is `prod.yaml` (3 + 3 replicas, persistence, three gateways, Ingress).
 
 ```bash
-helm dependency build ./ai-observe-stack
 helm install dog ./ai-observe-stack -n dog --create-namespace -f examples/ai-observe-stack/dev.yaml
 ```
 
@@ -468,7 +474,7 @@ kubectl delete namespace demo
 | Retention | `gateway.dorisExporter.historyDays` | 7 days by default |
 | Grafana password | `grafana.adminPassword` or `grafana.existingSecret` | default `admin` |
 | External access | `ingress`, `gateway.service.type` | a host for Grafana; SDKs outside the cluster use the OTLP/HTTP Ingress path or a LoadBalancer |
-| Private registry | `global.imagePullSecrets` (DOG), `imagePullSecrets` (collector), the `image.repository` keys | set in both charts |
+| Private registry | `global.imagePullSecrets` (DOG), `imagePullSecrets` (collector), the `image.repository` keys, `global.helperImages` (busybox and curl of the DOG chart) | set in both charts |
 | Demo output off | `gateway.debug.enabled: false` | `dev.yaml` has it on; it prints sampled data |
 | Collection scope | `logs.namespaces.exclude` | usually `kube-system` |
 

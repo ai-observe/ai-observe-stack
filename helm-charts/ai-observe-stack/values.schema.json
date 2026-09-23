@@ -8,6 +8,7 @@
       "type": "object",
       "properties": {
         "imagePullSecrets": {"type": "array"},
+        "helperImages": {"type": "object", "additionalProperties": false, "properties": {"busybox": {"type": "string"}, "curl": {"type": "string"}}},
         "timezone": {"type": "string"},
         "clusterName": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"},
         "platform": {"description": "belongs to dog-k8s-collector; rejected with a hint by the templates"}

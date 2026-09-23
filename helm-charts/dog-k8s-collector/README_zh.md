@@ -1,6 +1,6 @@
 # dog-k8s-collector
 
-[English](./README.md) · **[上手指南](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/GETTING_STARTED_zh.md)**（端到端，两个 chart） · **[使用手册](./USER_GUIDE_zh.md)**（安装、日志规则与预设、指标、扩缩容、排障、values 参考） · [DOG Stack chart](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/ai-observe-stack/README_zh.md)
+[English](./README.md) · **[上手指南](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/GETTING_STARTED_zh.md)**（端到端，两个 chart） · **[使用手册](./USER_GUIDE_zh.md)**（安装、日志规则与预设、指标、扩缩容、排障、values 参考） · [DOG Stack chart](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/ai-observe-stack/README_zh.md)
 
 把一个 K8s 集群采进 DOG Stack（Doris + OpenTelemetry + Grafana）的 Gateway。两个工作负载，都往 Gateway 发 OTLP：
 
@@ -9,14 +9,14 @@
 | **agent**（DaemonSet） | 每节点一个，root | `/var/log/pods` 的容器 stdout / stderr（带 13 个预设的规则引擎）、kubelet 与节点指标、给 SDK 的节点本地 OTLP 入口、带 Prometheus 注解的 Pod，可选节点 journal |
 | **cluster**（Deployment） | 一个副本，多副本 leader 选举 | 集群对象指标、Kubernetes Events |
 
-两者是否部署由你开启的 `presets` 推导。前提是有一个在跑的 DOG Stack Gateway，它由 [`ai-observe-stack`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/ai-observe-stack/README_zh.md) chart 部署。
+两者是否部署由你开启的 `presets` 推导。前提是有一个在跑的 DOG Stack Gateway，它由 [`ai-observe-stack`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/ai-observe-stack/README_zh.md) chart 部署。
 
 ## 快速开始
 
 ```bash
-helm repo add ai-observe-stack https://charts.velodb.io
+git clone https://github.com/ai-observe/ai-observe-stack.git && cd ai-observe-stack/helm-charts
 kubectl label namespace dog pod-security.kubernetes.io/enforce=privileged   # 仅当启用了 PodSecurity restricted
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
   --set clusterName=my-cluster --set platform=eks
 kubectl -n dog get pods                                                      # 每节点一个 agent，一个 cluster 采集器
@@ -41,7 +41,7 @@ logs:
   rules: []                      # 你自己的日志格式，见下
 ```
 
-不用 Helm：[`examples/dog-k8s-collector/kubectl/`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/examples/dog-k8s-collector/kubectl/) 是从这个 chart 生成的同一套对象的普通清单。
+不用 Helm：[`examples/dog-k8s-collector/kubectl/`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/examples/dog-k8s-collector/kubectl/) 是从这个 chart 生成的同一套对象的普通清单。
 
 ## 采什么
 

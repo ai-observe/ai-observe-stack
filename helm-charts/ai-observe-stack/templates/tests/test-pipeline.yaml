@@ -16,7 +16,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: test
-      image: curlimages/curl:8.10.1
+      image: {{ .Values.global.helperImages.curl | quote }}
       env:
         - name: DORIS_USERNAME
           valueFrom:

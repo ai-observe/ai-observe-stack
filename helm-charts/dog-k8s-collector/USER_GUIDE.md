@@ -1,6 +1,6 @@
 # dog-k8s-collector User Guide
 
-The chart collects a Kubernetes cluster into a DOG Stack gateway: an **agent** DaemonSet (one per node: container logs from `/var/log/pods`, kubelet and node metrics, a node-local OTLP entry point, Prometheus annotations) and a **cluster** Deployment (cluster metrics, Kubernetes Events). It needs a running gateway; installing the DOG Stack itself is the `ai-observe-stack` chart and [its guide](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/ai-observe-stack/USER_GUIDE.md). 中文版：[USER_GUIDE_zh.md](./USER_GUIDE_zh.md).
+The chart collects a Kubernetes cluster into a DOG Stack gateway: an **agent** DaemonSet (one per node: container logs from `/var/log/pods`, kubelet and node metrics, a node-local OTLP entry point, Prometheus annotations) and a **cluster** Deployment (cluster metrics, Kubernetes Events). It needs a running gateway; installing the DOG Stack itself is the `ai-observe-stack` chart and [its guide](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/ai-observe-stack/USER_GUIDE.md). 中文版：[USER_GUIDE_zh.md](./USER_GUIDE_zh.md).
 
 1. [Install](#1-install)
 2. [Configuring log collection](#2-configuring-log-collection)
@@ -19,7 +19,7 @@ You need the gateway's OTLP gRPC address. For a DOG Stack installed by the `ai-o
 
 ```bash
 kubectl label namespace dog pod-security.kubernetes.io/enforce=privileged   # only if PodSecurity restricted is enforced
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
   --set clusterName=my-cluster --set platform=eks
 kubectl -n dog get pods                                                      # one agent per node, one cluster collector
@@ -39,7 +39,7 @@ platform: generic              # generic | k3s | eks | gke | aks | ack | openshi
 
 **What arrives.** Every container's stdout / stderr, each record carrying `k8s.namespace.name`, `k8s.pod.name`, `k8s.container.name`, the workload name (`k8s.deployment.name`, …), `k8s.node.name`, `k8s.cluster.name`, image name and tag, and the pod labels listed in `presets.kubernetesAttributes.labels`; `service_name` is the workload name unless the application set `service.name` itself. Metrics land in `otel_metrics_<type>`, Events in `otel_logs` with `service_name = kubernetes-events`. Right after the install the Logs Explorer dashboard only shows lines written from then on, because existing files are not re-read (`logs.startAt: end`).
 
-**Without Helm**: `examples/dog-k8s-collector/kubectl/collectors.yaml` is generated from this chart; set the gateway address in `kubectl/values.yaml`, run `render.sh`, `kubectl apply` ([README](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/examples/dog-k8s-collector/kubectl/README.md)).
+**Without Helm**: `examples/dog-k8s-collector/kubectl/collectors.yaml` is generated from this chart; set the gateway address in `kubectl/values.yaml`, run `render.sh`, `kubectl apply` ([README](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/examples/dog-k8s-collector/kubectl/README.md)).
 
 **Which presets run where**: `logsCollection`, `kubeletMetrics`, `hostMetrics`, `otlp`, `prometheusScrape`, `journald` run in the agent; `clusterMetrics` and `kubernetesEvents` in the cluster collector. Disable every preset of a group and that workload is not deployed.
 
@@ -274,7 +274,7 @@ Look at three things: `dog.log.rule` is your rule's name (if not, the selector d
 ### Step 5: deploy and verify
 
 ```bash
-helm upgrade dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog -f my-values.yaml
+helm upgrade dog-k8s-collector ./dog-k8s-collector -n dog -f my-values.yaml
 ```
 
 The agents restart (one per node, within a minute). Two minutes later:
