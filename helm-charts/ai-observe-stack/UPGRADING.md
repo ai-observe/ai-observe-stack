@@ -13,7 +13,7 @@ If you relied on `logCollector.enabled: true`, install the collector chart after
 documented in `helm-charts/dog-k8s-collector/USER_GUIDE.md`):
 
 ```bash
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n <namespace> \
+helm install dog-k8s-collector ./dog-k8s-collector -n <namespace> \
   --set gateway.endpoint=<release>-ai-observe-stack-otel-gateway.<namespace>.svc:4317 --set clusterName=<name>
 ```
 

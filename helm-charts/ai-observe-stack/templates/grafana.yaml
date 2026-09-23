@@ -35,7 +35,7 @@ spec:
         runAsGroup: 472
       initContainers:
         - name: init-chown-data
-          image: busybox:1.36
+          image: {{ .Values.global.helperImages.busybox | quote }}
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 0
@@ -69,7 +69,7 @@ spec:
         {{- end }}
         {{- if eq .Values.doris.mode "internal" }}
         - name: wait-for-doris
-          image: busybox:1.36
+          image: {{ .Values.global.helperImages.busybox | quote }}
           command:
             - sh
             - -c
@@ -78,7 +78,7 @@ spec:
         {{- end }}
       containers:
         - name: grafana
-          image: "grafana/grafana:{{ .Values.grafana.image.tag }}"
+          image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
           imagePullPolicy: IfNotPresent
           ports:
             - {name: http, containerPort: 3000, protocol: TCP}

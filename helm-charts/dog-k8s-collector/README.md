@@ -1,6 +1,6 @@
 # dog-k8s-collector
 
-[中文文档](./README_zh.md) · **[Getting started](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/GETTING_STARTED.md)** (end to end, both charts) · **[User guide](./USER_GUIDE.md)** (install, log rules and presets, metrics, scaling, troubleshooting, values reference) · [DOG Stack chart](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/ai-observe-stack/README.md)
+[中文文档](./README_zh.md) · **[Getting started](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/GETTING_STARTED.md)** (end to end, both charts) · **[User guide](./USER_GUIDE.md)** (install, log rules and presets, metrics, scaling, troubleshooting, values reference) · [DOG Stack chart](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/ai-observe-stack/README.md)
 
 Collects a Kubernetes cluster into a DOG Stack (Doris + OpenTelemetry + Grafana) gateway. Two
 workloads, both sending OTLP to the gateway:
@@ -11,14 +11,14 @@ workloads, both sending OTLP to the gateway:
 | **cluster** (Deployment) | one replica, leader election when more | cluster object metrics, Kubernetes Events |
 
 Which of the two run is derived from the `presets` you enable. The chart needs a running DOG
-Stack gateway; it is deployed by the [`ai-observe-stack`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/ai-observe-stack/README.md) chart.
+Stack gateway; it is deployed by the [`ai-observe-stack`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/ai-observe-stack/README.md) chart.
 
 ## Quick start
 
 ```bash
-helm repo add ai-observe-stack https://charts.velodb.io
+git clone https://github.com/ai-observe/ai-observe-stack.git && cd ai-observe-stack/helm-charts
 kubectl label namespace dog pod-security.kubernetes.io/enforce=privileged   # only if PodSecurity restricted is enforced
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
   --set clusterName=my-cluster --set platform=eks
 kubectl -n dog get pods                                                      # one agent per node, one cluster collector
@@ -43,7 +43,7 @@ logs:
   rules: []                      # your log formats, see below
 ```
 
-Without Helm: [`examples/dog-k8s-collector/kubectl/`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/examples/dog-k8s-collector/kubectl/) holds the
+Without Helm: [`examples/dog-k8s-collector/kubectl/`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/examples/dog-k8s-collector/kubectl/) holds the
 same objects as a plain manifest generated from this chart.
 
 ## What is collected

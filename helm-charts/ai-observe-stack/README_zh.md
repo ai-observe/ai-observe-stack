@@ -2,7 +2,7 @@
 
 > 从 0.1.x 升级？0.2.0 是破坏性版本：values 结构重排、Gateway 对象改名，K8s 采集器移到了 `dog-k8s-collector` chart。请先阅读 [UPGRADING.md](./UPGRADING.md)。
 
-[English](./README.md) · **[上手指南](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/GETTING_STARTED_zh.md)**（端到端，两个 chart） · **[使用手册](./USER_GUIDE_zh.md)**（安装、发送数据、扩缩容、排障、values 完整参考）
+[English](./README.md) · **[上手指南](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/GETTING_STARTED_zh.md)**（端到端，两个 chart） · **[使用手册](./USER_GUIDE_zh.md)**（安装、发送数据、扩缩容、排障、values 完整参考）
 
 **AIObserve Stack**（DOG Stack：**D**oris + **O**penTelemetry + **G**rafana）是一个可观测后端：接收 OTLP 的 OpenTelemetry Gateway、存日志 / 指标 / 链路的 Apache Doris、带 Doris App 插件的 Grafana。任何会说 OTLP 的东西都能往它发：SDK、别的 Collector，以及配套的 `dog-k8s-collector` chart。
 
@@ -37,14 +37,15 @@ Gateway 从不采集。它是唯一和 Doris 说话的组件，持有唯一一�
 ## 快速开始
 
 ```bash
-helm repo add ai-observe-stack https://charts.velodb.io
-helm repo update
+git clone https://github.com/ai-observe/ai-observe-stack.git
+cd ai-observe-stack/helm-charts
+helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；任何 Doris 模式都需要
 ```
 
 **由 chart 部署 Doris**（依赖 Doris Operator）：
 
 ```bash
-helm install dog ai-observe-stack/ai-observe-stack -n dog --create-namespace
+helm install dog ./ai-observe-stack -n dog --create-namespace
 ```
 
 **接入已有 Doris 集群**：
@@ -54,7 +55,7 @@ kubectl create namespace dog
 kubectl create secret generic doris-credentials -n dog \
   --from-literal=username=otel --from-literal=password='***'
 
-helm install dog ai-observe-stack/ai-observe-stack -n dog \
+helm install dog ./ai-observe-stack -n dog \
   --set doris.mode=external \
   --set doris.external.host=doris-fe.doris.svc.cluster.local \
   --set doris.external.existingSecret=doris-credentials \
@@ -74,14 +75,14 @@ OTLP 发到 `dog-ai-observe-stack-otel-gateway.dog.svc:4317`（gRPC）或 `:4318
 
 ## 采集 K8s 集群
 
-那是独立的 [`dog-k8s-collector`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/dog-k8s-collector/README_zh.md) chart：一个 agent DaemonSet（带规则引擎和预设的容器日志、kubelet 与节点指标、节点本地 OTLP 入口、Prometheus 注解）和一个 cluster Deployment（集群指标、Kubernetes Events），每个集群装一份，指向这个 Gateway：
+那是独立的 [`dog-k8s-collector`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/dog-k8s-collector/README_zh.md) chart：一个 agent DaemonSet（带规则引擎和预设的容器日志、kubelet 与节点指标、节点本地 OTLP 入口、Prometheus 注解）和一个 cluster Deployment（集群指标、Kubernetes Events），每个集群装一份，指向这个 Gateway：
 
 ```bash
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 --set clusterName=my-cluster
 ```
 
-[`helm-charts/examples/dog-k8s-collector/`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/examples/dog-k8s-collector/) 里有 values 示例、litefuse 参考部署，以及给不用 Helm 的集群准备的 `kubectl` 清单。
+[`helm-charts/examples/dog-k8s-collector/`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/examples/dog-k8s-collector/) 里有 values 示例、litefuse 参考部署，以及给不用 Helm 的集群准备的 `kubectl` 清单。
 
 ## Doris 与凭据
 
@@ -144,7 +145,7 @@ Grafana 面板：chart 预置 *K8s Observability*、*Logs Explorer*、*Kubernete
 ## 升级与卸载
 
 ```bash
-helm upgrade <release> ai-observe-stack/ai-observe-stack -n <ns> -f my-values.yaml
+helm upgrade <release> ./ai-observe-stack -n <ns> -f my-values.yaml
 helm uninstall <release> -n <ns>
 kubectl delete pvc -n <ns> -l app.kubernetes.io/instance=<release>      # Gateway 队列（internal 模式下还有 Doris 数据）
 ```

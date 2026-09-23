@@ -1,6 +1,6 @@
 # AIObserve Stack 使用手册
 
-这份手册按"你想做什么"组织。第 1 到 3 节安装 DOG Stack 本体（Gateway + Doris + Grafana），其余章节配置和运维它。采集 K8s 集群是独立的 `dog-k8s-collector` chart，有[自己的手册](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/dog-k8s-collector/USER_GUIDE_zh.md)。参数的完整清单在最后一节。
+这份手册按"你想做什么"组织。第 1 到 3 节安装 DOG Stack 本体（Gateway + Doris + Grafana），其余章节配置和运维它。采集 K8s 集群是独立的 `dog-k8s-collector` chart，有[自己的手册](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/dog-k8s-collector/USER_GUIDE_zh.md)。参数的完整清单在最后一节。
 
 1. [安装前准备](#1-安装前准备)
 2. [第一次安装](#2-第一次安装)
@@ -52,9 +52,10 @@ doris:
 ```
 
 ```bash
-helm repo add ai-observe-stack https://charts.velodb.io
-helm repo update
-helm upgrade --install dog ai-observe-stack/ai-observe-stack -n dog --create-namespace -f my-values.yaml
+git clone https://github.com/ai-observe/ai-observe-stack.git
+cd ai-observe-stack/helm-charts
+helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；任何 Doris 模式都需要
+helm upgrade --install dog ./ai-observe-stack -n dog --create-namespace -f my-values.yaml
 ```
 
 `helm upgrade --install` 第一次跑是安装，以后跑是升级，一条命令记住即可。
@@ -125,12 +126,12 @@ env:
 
 ```bash
 kubectl label namespace dog pod-security.kubernetes.io/enforce=privileged   # 仅当启用了 PodSecurity restricted
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
   --set clusterName=my-cluster
 ```
 
-那个 chart 的[使用手册](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/dog-k8s-collector/USER_GUIDE_zh.md)讲它采什么、日志解析规则与预设、节点本地 OTLP 入口（SDK 数据补上 Pod 元数据）、扩缩容和排障。`helm-charts/examples/dog-k8s-collector/` 有 values 示例，以及给不用 Helm 的集群准备的 `kubectl` 清单。
+那个 chart 的[使用手册](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/dog-k8s-collector/USER_GUIDE_zh.md)讲它采什么、日志解析规则与预设、节点本地 OTLP 入口（SDK 数据补上 Pod 元数据）、扩缩容和排障。`helm-charts/examples/dog-k8s-collector/` 有 values 示例，以及给不用 Helm 的集群准备的 `kubectl` 清单。
 
 ---
 
@@ -207,7 +208,7 @@ gateway:
 **升级 chart 或改配置。** 同一条命令：
 
 ```bash
-helm upgrade dog ai-observe-stack/ai-observe-stack -n dog -f my-values.yaml
+helm upgrade dog ./ai-observe-stack -n dog -f my-values.yaml
 ```
 
 改 Gateway 配置只重启 Gateway，队列在 PVC 里不丢。
@@ -266,6 +267,7 @@ kubectl get cm -n dog dog-ai-observe-stack-otel-gateway-config -o jsonpath='{.da
 |---|---|---|
 | `global.timezone` | `UTC` | Doris exporter 的 IANA 时区 |
 | `global.imagePullSecrets` | `[]` | 作用于所有 Pod 的拉取凭据 |
+| `global.helperImages.busybox` / `curl` | `busybox:1.36` / `curlimages/curl:8.10.1` | init 容器 / `helm test` Pod 使用；私有仓库时指向镜像源 |
 
 ### doris
 
@@ -325,6 +327,7 @@ kubectl get cm -n dog dog-ai-observe-stack-otel-gateway-config -o jsonpath='{.da
 | 键 | 默认 | 说明 |
 |---|---|---|
 | `grafana.enabled` | `true` | |
+| `grafana.image.repository` / `tag` | `grafana/grafana` / `11.4.0` | |
 | `grafana.adminUser` / `adminPassword` | `admin` / `admin` | 写入 `<release>-ai-observe-stack-grafana-admin` |
 | `grafana.existingSecret` | `""` | 自己的 Secret，键 `admin-user` / `admin-password` |
 | `grafana.plugins` | `[]` | 启动时联网安装的插件 |

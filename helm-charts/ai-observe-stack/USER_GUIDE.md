@@ -1,6 +1,6 @@
 # AIObserve Stack User Guide
 
-Organised by what you want to do. Sections 1 to 3 install the DOG Stack (gateway + Doris + Grafana); the rest configures and operates it. Collecting a Kubernetes cluster is the separate `dog-k8s-collector` chart with [its own guide](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/dog-k8s-collector/USER_GUIDE.md). The complete list of values is in the last section. 中文版：[USER_GUIDE_zh.md](./USER_GUIDE_zh.md).
+Organised by what you want to do. Sections 1 to 3 install the DOG Stack (gateway + Doris + Grafana); the rest configures and operates it. Collecting a Kubernetes cluster is the separate `dog-k8s-collector` chart with [its own guide](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/dog-k8s-collector/USER_GUIDE.md). The complete list of values is in the last section. 中文版：[USER_GUIDE_zh.md](./USER_GUIDE_zh.md).
 
 1. [Before you install](#1-before-you-install)
 2. [First install](#2-first-install)
@@ -52,9 +52,10 @@ doris:
 ```
 
 ```bash
-helm repo add ai-observe-stack https://charts.velodb.io
-helm repo update
-helm upgrade --install dog ai-observe-stack/ai-observe-stack -n dog --create-namespace -f my-values.yaml
+git clone https://github.com/ai-observe/ai-observe-stack.git
+cd ai-observe-stack/helm-charts
+helm dependency build ./ai-observe-stack   # fetches the Doris Operator subchart; required in every Doris mode
+helm upgrade --install dog ./ai-observe-stack -n dog --create-namespace -f my-values.yaml
 ```
 
 `helm upgrade --install` installs the first time and upgrades afterwards; one command to remember.
@@ -125,12 +126,12 @@ env:
 
 ```bash
 kubectl label namespace dog pod-security.kubernetes.io/enforce=privileged   # only if PodSecurity restricted is enforced
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
   --set clusterName=my-cluster
 ```
 
-That chart's [user guide](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/dog-k8s-collector/USER_GUIDE.md) covers what it collects, log parsing rules and presets, the node-local OTLP entry point (SDK records enriched with pod metadata), scaling and troubleshooting. `helm-charts/examples/dog-k8s-collector/` has values files and a plain `kubectl` manifest for clusters without Helm.
+That chart's [user guide](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/dog-k8s-collector/USER_GUIDE.md) covers what it collects, log parsing rules and presets, the node-local OTLP entry point (SDK records enriched with pod metadata), scaling and troubleshooting. `helm-charts/examples/dog-k8s-collector/` has values files and a plain `kubectl` manifest for clusters without Helm.
 
 ---
 
@@ -207,7 +208,7 @@ From then on the account only needs `LOAD_PRIV` and `SELECT_PRIV` on the databas
 **Upgrading the chart or changing configuration.** Same command:
 
 ```bash
-helm upgrade dog ai-observe-stack/ai-observe-stack -n dog -f my-values.yaml
+helm upgrade dog ./ai-observe-stack -n dog -f my-values.yaml
 ```
 
 Changing gateway settings restarts only the gateway, whose queue lives on the PVC and is kept.
@@ -266,6 +267,7 @@ Only keys you would change; `resources`, `image`, `nodeSelector`, `tolerations`,
 |---|---|---|
 | `global.timezone` | `UTC` | IANA zone for the Doris exporter |
 | `global.imagePullSecrets` | `[]` | pull secrets applied to every pod |
+| `global.helperImages.busybox` / `curl` | `busybox:1.36` / `curlimages/curl:8.10.1` | init containers / `helm test` pod; point at a mirror for private registries |
 
 ### doris
 
@@ -325,6 +327,7 @@ Only keys you would change; `resources`, `image`, `nodeSelector`, `tolerations`,
 | Key | Default | Meaning |
 |---|---|---|
 | `grafana.enabled` | `true` | |
+| `grafana.image.repository` / `tag` | `grafana/grafana` / `11.4.0` | |
 | `grafana.adminUser` / `adminPassword` | `admin` / `admin` | written into `<release>-ai-observe-stack-grafana-admin` |
 | `grafana.existingSecret` | `""` | your Secret with keys `admin-user` / `admin-password` |
 | `grafana.plugins` | `[]` | plugins downloaded at start-up |

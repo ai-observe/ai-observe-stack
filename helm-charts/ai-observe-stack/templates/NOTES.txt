@@ -20,8 +20,9 @@ Verify
 Send data
   Anything that speaks OTLP can send to the gateway address above.
   To collect this Kubernetes cluster (container logs, kubelet / node / cluster metrics, Events),
-  install the dog-k8s-collector chart pointed at it:
-    helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n {{ .Release.Namespace }} \
+  install the dog-k8s-collector chart pointed at it, from the helm-charts directory of
+  https://github.com/ai-observe/ai-observe-stack:
+    helm install dog-k8s-collector ./dog-k8s-collector -n {{ .Release.Namespace }} \
       --set gateway.endpoint={{ include "aiobs.gateway.otlpGrpcEndpoint" . }} --set clusterName=<your cluster name>
   (guide: helm-charts/GETTING_STARTED.md; examples: helm-charts/examples/dog-k8s-collector/)
 

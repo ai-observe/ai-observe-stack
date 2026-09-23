@@ -1,6 +1,6 @@
 # dog-k8s-collector 使用手册
 
-这个 chart 把一个 K8s 集群采进 DOG Stack 的 Gateway：一个 **agent** DaemonSet（每节点一个：`/var/log/pods` 的容器日志、kubelet 与节点指标、节点本地 OTLP 入口、Prometheus 注解）和一个 **cluster** Deployment（集群指标、Kubernetes Events）。前提是有一个在跑的 Gateway；安装 DOG Stack 本体是 `ai-observe-stack` chart 和[它的手册](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/ai-observe-stack/USER_GUIDE_zh.md)。
+这个 chart 把一个 K8s 集群采进 DOG Stack 的 Gateway：一个 **agent** DaemonSet（每节点一个：`/var/log/pods` 的容器日志、kubelet 与节点指标、节点本地 OTLP 入口、Prometheus 注解）和一个 **cluster** Deployment（集群指标、Kubernetes Events）。前提是有一个在跑的 Gateway；安装 DOG Stack 本体是 `ai-observe-stack` chart 和[它的手册](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/ai-observe-stack/USER_GUIDE_zh.md)。
 
 1. [安装](#1-安装)
 2. [配置日志采集](#2-配置日志采集)
@@ -19,7 +19,7 @@
 
 ```bash
 kubectl label namespace dog pod-security.kubernetes.io/enforce=privileged   # 仅当启用了 PodSecurity restricted
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
   --set clusterName=my-cluster --set platform=eks
 kubectl -n dog get pods                                                      # 每节点一个 agent，一个 cluster 采集器
@@ -39,7 +39,7 @@ platform: generic              # generic | k3s | eks | gke | aks | ack | openshi
 
 **会收到什么。** 所有容器的 stdout / stderr，每条带 `k8s.namespace.name`、`k8s.pod.name`、`k8s.container.name`、工作负载名（`k8s.deployment.name` 等）、`k8s.node.name`、`k8s.cluster.name`、镜像名与 tag，以及 `presets.kubernetesAttributes.labels` 列出的 Pod 标签；`service_name` 取工作负载名，除非应用自己设置了 `service.name`。指标进 `otel_metrics_<type>`，Events 进 `otel_logs` 且 `service_name = kubernetes-events`。刚装完 Logs Explorer 只有之后写入的日志，因为默认不回读老文件（`logs.startAt: end`）。
 
-**不用 Helm**：`examples/dog-k8s-collector/kubectl/collectors.yaml` 是从这个 chart 生成的；在 `kubectl/values.yaml` 填 Gateway 地址，跑 `render.sh`，`kubectl apply`（[README](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/examples/dog-k8s-collector/kubectl/README.md)）。
+**不用 Helm**：`examples/dog-k8s-collector/kubectl/collectors.yaml` 是从这个 chart 生成的；在 `kubectl/values.yaml` 填 Gateway 地址，跑 `render.sh`，`kubectl apply`（[README](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/examples/dog-k8s-collector/kubectl/README.md)）。
 
 **哪些 preset 跑在哪**：`logsCollection`、`kubeletMetrics`、`hostMetrics`、`otlp`、`prometheusScrape`、`journald` 在 agent；`clusterMetrics`、`kubernetesEvents` 在 cluster 采集器。一组的 preset 全关，对应的工作负载就不部署。
 
@@ -274,7 +274,7 @@ Attributes:
 ### 第 5 步：部署并验证
 
 ```bash
-helm upgrade dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog -f my-values.yaml
+helm upgrade dog-k8s-collector ./dog-k8s-collector -n dog -f my-values.yaml
 ```
 
 Agent 会滚动重启（每节点一个，一分钟内完成）。两分钟后：

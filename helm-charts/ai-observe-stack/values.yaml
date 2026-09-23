@@ -24,6 +24,11 @@ global:
   timezone: UTC
   # Pull secrets for every image the chart runs (private registries)
   imagePullSecrets: []
+  # Helper images: busybox for the init containers (wait for Doris, copy the Doris app plugin),
+  # curl for the `helm test` pod. Point them at a mirror for private registries.
+  helperImages:
+    busybox: busybox:1.36
+    curl: curlimages/curl:8.10.1
 
 # -----------------------------------------------------------------------------
 # Doris (storage)
@@ -180,6 +185,7 @@ gateway:
 grafana:
   enabled: true
   image:
+    repository: grafana/grafana
     tag: "11.4.0"
   adminUser: admin
   adminPassword: admin

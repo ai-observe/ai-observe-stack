@@ -3,7 +3,7 @@
 > Upgrading from 0.1.x? 0.2.0 is a breaking release: new values layout, renamed gateway objects,
 > and the Kubernetes collectors moved to the `dog-k8s-collector` chart. Read [UPGRADING.md](./UPGRADING.md) first.
 
-[中文文档](./README_zh.md) · **[Getting started](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/GETTING_STARTED.md)** (end to end, both charts) · **[User guide](./USER_GUIDE.md)** (install, send data, scale, troubleshoot, full values reference)
+[中文文档](./README_zh.md) · **[Getting started](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/GETTING_STARTED.md)** (end to end, both charts) · **[User guide](./USER_GUIDE.md)** (install, send data, scale, troubleshoot, full values reference)
 
 **AIObserve Stack** (the *DOG Stack*: **D**oris + **O**penTelemetry + **G**rafana) is an
 observability backend: an OpenTelemetry gateway that receives OTLP, Apache Doris that stores logs,
@@ -44,14 +44,15 @@ credentials and a persisted queue. Collecting a Kubernetes cluster is the separa
 ## Quick start
 
 ```bash
-helm repo add ai-observe-stack https://charts.velodb.io
-helm repo update
+git clone https://github.com/ai-observe/ai-observe-stack.git
+cd ai-observe-stack/helm-charts
+helm dependency build ./ai-observe-stack   # fetches the Doris Operator subchart; required in every Doris mode
 ```
 
 **With Doris deployed by the chart** (the Doris Operator is a dependency):
 
 ```bash
-helm install dog ai-observe-stack/ai-observe-stack -n dog --create-namespace
+helm install dog ./ai-observe-stack -n dog --create-namespace
 ```
 
 **Against an existing Doris cluster**:
@@ -61,7 +62,7 @@ kubectl create namespace dog
 kubectl create secret generic doris-credentials -n dog \
   --from-literal=username=otel --from-literal=password='***'
 
-helm install dog ai-observe-stack/ai-observe-stack -n dog \
+helm install dog ./ai-observe-stack -n dog \
   --set doris.mode=external \
   --set doris.external.host=doris-fe.doris.svc.cluster.local \
   --set doris.external.existingSecret=doris-credentials \
@@ -81,17 +82,17 @@ Send OTLP to `dog-ai-observe-stack-otel-gateway.dog.svc:4317` (gRPC) or `:4318` 
 
 ## Collecting a Kubernetes cluster
 
-That is the separate [`dog-k8s-collector`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/dog-k8s-collector/README.md) chart: an agent
+That is the separate [`dog-k8s-collector`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/dog-k8s-collector/README.md) chart: an agent
 DaemonSet (container logs with a rules engine and presets, kubelet and node metrics, node-local
 OTLP entry, Prometheus annotations) and a cluster Deployment (cluster metrics, Kubernetes
 Events), installed once per cluster and pointed at this gateway:
 
 ```bash
-helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n dog \
+helm install dog-k8s-collector ./dog-k8s-collector -n dog \
   --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 --set clusterName=my-cluster
 ```
 
-[`helm-charts/examples/dog-k8s-collector/`](https://github.com/bingquanzhao/ai-observe-stack/blob/master/helm-charts/examples/dog-k8s-collector/) has values files, the
+[`helm-charts/examples/dog-k8s-collector/`](https://github.com/ai-observe/ai-observe-stack/blob/main/helm-charts/examples/dog-k8s-collector/) has values files, the
 litefuse reference deployment and a plain `kubectl` manifest for clusters without Helm.
 
 ## Doris and credentials
@@ -162,7 +163,7 @@ size, dropped and refused counts of the gateway and of every dog-k8s-collector p
 ## Upgrading and uninstalling
 
 ```bash
-helm upgrade <release> ai-observe-stack/ai-observe-stack -n <ns> -f my-values.yaml
+helm upgrade <release> ./ai-observe-stack -n <ns> -f my-values.yaml
 helm uninstall <release> -n <ns>
 kubectl delete pvc -n <ns> -l app.kubernetes.io/instance=<release>      # gateway queues (and Doris data if internal)
 ```

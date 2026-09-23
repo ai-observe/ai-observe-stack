@@ -96,7 +96,7 @@ spec:
       {{- if eq .Values.doris.mode "internal" }}
       initContainers:
         - name: wait-for-doris
-          image: busybox:1.36
+          image: {{ .Values.global.helperImages.busybox | quote }}
           command:
             - sh
             - -c
