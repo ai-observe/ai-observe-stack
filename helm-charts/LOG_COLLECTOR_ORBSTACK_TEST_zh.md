@@ -85,7 +85,7 @@ ruby -ryaml -e 'ARGV.each { |f| YAML.load_file(f); puts "OK #{f}" }' \
 rm -rf /tmp/aiobs-chart-test
 mkdir -p /tmp/aiobs-chart-test
 cp -R helm-charts/ai-observe-stack /tmp/aiobs-chart-test/ai-observe-stack
-$HELM dependency build /tmp/aiobs-chart-test/ai-observe-stack
+$HELM dependency update /tmp/aiobs-chart-test/ai-observe-stack
 ```
 
 执行 lint：

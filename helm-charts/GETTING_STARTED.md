@@ -12,7 +12,7 @@ Every step says what you should see; when stuck, use section 1.8. Commands assum
 ```bash
 git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/helm-charts
-helm dependency build ./ai-observe-stack   # fetches the Doris Operator subchart; required even with an existing Doris
+helm dependency update ./ai-observe-stack  # fetches the Doris Operator subchart; required even with an existing Doris
 ```
 
 ## 0. The two charts
@@ -64,7 +64,7 @@ Check it is reachable from this cluster (replace the address with yours):
 
 ```bash
 kubectl run -it --rm otlp-check --image=busybox:1.36 --restart=Never -- \
-  nc -zv dog-ai-observe-stack-otel-gateway.dog.svc 4317
+  sh -c 'sleep 2; nc -zv dog-ai-observe-stack-otel-gateway.dog.svc 4317'
 ```
 
 `open` means it works. `refused` or a timeout means fix the network first; nothing below will work.
@@ -336,7 +336,8 @@ Uninstalling leaves the DOG Stack and the data in Doris untouched. `/var/lib/ote
 | Symptom | Cause and fix |
 |---|---|
 | `helm install` says `gateway.endpoint is required` | the gateway address is missing, see 1.1 |
-| `helm install dog ./ai-observe-stack` says `missing in charts/ directory: doris-operator` | the Doris Operator subchart was not fetched; run `helm dependency build ./ai-observe-stack` (needed with an existing Doris too) |
+| `helm install dog ./ai-observe-stack` says `missing in charts/ directory: doris-operator` | the Doris Operator subchart was not fetched; run `helm dependency update ./ai-observe-stack` (needed with an existing Doris too) |
+| `helm dependency build` says `no repository definition for https://charts.selectdb.com` | `build` only uses repositories added with `helm repo add`; use `helm dependency update ./ai-observe-stack`, which needs no `helm repo add` |
 | `helm install` says `additional properties 'xxx' not allowed` | a top-level key is misspelt. Valid top-level keys: `gateway`, `clusterName`, `platform`, `timezone`, `imagePullSecrets`, `presets`, `logs`, `agent`, `cluster`, `nameOverride`, `fullnameOverride` |
 | agent pod `CreateContainerConfigError` or rejected by PodSecurity | the namespace enforces `restricted`; add the `privileged` label, see 1.2 |
 | agent log `permission denied` on `/var/log/pods` | same |
@@ -379,7 +380,7 @@ Two paths, pick one:
 helm install dog ./ai-observe-stack -n dog --create-namespace -f examples/ai-observe-stack/dev.yaml
 ```
 
-Doris FE / BE take two to five minutes to pull and initialise; the gateway waits for FE's 9030 and 8030 before starting. `dev.yaml` turns on the gateway's debug output; when the collector runs in the same cluster, keep that pod out of collection with `logs.excludePaths: [/var/log/pods/dog_dog-ai-observe-stack-otel-gateway-*/*/*.log]` on the collector, otherwise the gateway's copy of every record is collected again.
+Doris FE / BE take two to five minutes to pull and initialise; the gateway waits until FE answers on 9030 and 8030 and a BE is online before starting. `dev.yaml` turns on the gateway's debug output; when the collector runs in the same cluster, keep that pod out of collection with `logs.excludePaths: [/var/log/pods/dog_dog-ai-observe-stack-otel-gateway-*/*/*.log]` on the collector, otherwise the gateway's copy of every record is collected again.
 
 **Path B: an existing Doris.** Put the account in a Secret, never in values:
 

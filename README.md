@@ -106,7 +106,7 @@ Best for production deployments, development environments, and scalable setups. 
    ```bash
    git clone https://github.com/ai-observe/ai-observe-stack.git
    cd ai-observe-stack/helm-charts
-   helm dependency build ./ai-observe-stack
+   helm dependency update ./ai-observe-stack
    ```
 
 2. Install the DOG Stack. With Doris deployed by the chart:

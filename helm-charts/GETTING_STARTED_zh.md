@@ -12,7 +12,7 @@
 ```bash
 git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/helm-charts
-helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；接入已有 Doris 时也需要
+helm dependency update ./ai-observe-stack  # 拉取 Doris Operator 子 chart；接入已有 Doris 时也需要
 ```
 
 ## 0. 先认识两个 chart
@@ -64,7 +64,7 @@ helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；�
 
 ```bash
 kubectl run -it --rm otlp-check --image=busybox:1.36 --restart=Never -- \
-  nc -zv dog-ai-observe-stack-otel-gateway.dog.svc 4317
+  sh -c 'sleep 2; nc -zv dog-ai-observe-stack-otel-gateway.dog.svc 4317'
 ```
 
 看到 `open` 就通了。看到 `refused` 或超时，先解决网络，后面的步骤不会成功。
@@ -336,7 +336,8 @@ helm uninstall dog-k8s-collector -n dog                                         
 | 现象 | 原因与处理 |
 |---|---|
 | `helm install` 报 `gateway.endpoint is required` | 没填 Gateway 地址，见 1.1 |
-| `helm install dog ./ai-observe-stack` 报 `missing in charts/ directory: doris-operator` | 没拉取 Doris Operator 子 chart；执行 `helm dependency build ./ai-observe-stack`（接入已有 Doris 时也需要） |
+| `helm install dog ./ai-observe-stack` 报 `missing in charts/ directory: doris-operator` | 没拉取 Doris Operator 子 chart；执行 `helm dependency update ./ai-observe-stack`（接入已有 Doris 时也需要） |
+| `helm dependency build` 报 `no repository definition for https://charts.selectdb.com` | `build` 只使用 `helm repo add` 过的仓库；改用 `helm dependency update ./ai-observe-stack`，不需要 `helm repo add` |
 | `helm install` 报 `additional properties 'xxx' not allowed` | 顶层键拼错。合法的顶层键：`gateway`、`clusterName`、`platform`、`timezone`、`imagePullSecrets`、`presets`、`logs`、`agent`、`cluster`、`nameOverride`、`fullnameOverride` |
 | agent Pod `CreateContainerConfigError` 或被 PodSecurity 拒绝 | 命名空间是 `restricted`，打 `privileged` 标签，见 1.2 |
 | agent 日志 `permission denied` `/var/log/pods` | 同上 |
@@ -379,7 +380,7 @@ kubectl get cm -n dog dog-k8s-collector-agent-config -o jsonpath='{.data.config\
 helm install dog ./ai-observe-stack -n dog --create-namespace -f examples/ai-observe-stack/dev.yaml
 ```
 
-Doris FE / BE 拉镜像和初始化要两到五分钟，Gateway 会等 FE 的 9030 和 8030 就绪再启动。`dev.yaml` 打开了 Gateway 的 debug 输出；采集器装在同一集群时，在采集器上加 `logs.excludePaths: [/var/log/pods/dog_dog-ai-observe-stack-otel-gateway-*/*/*.log]` 把这个 Pod 挡在外面，否则 Gateway 打印的那份数据会被再采一遍。
+Doris FE / BE 拉镜像和初始化要两到五分钟，Gateway 会等 FE 的 9030 和 8030 就绪、且有 BE 在线后再启动。`dev.yaml` 打开了 Gateway 的 debug 输出；采集器装在同一集群时，在采集器上加 `logs.excludePaths: [/var/log/pods/dog_dog-ai-observe-stack-otel-gateway-*/*/*.log]` 把这个 Pod 挡在外面，否则 Gateway 打印的那份数据会被再采一遍。
 
 **路 B：已有 Doris。** 先把账号放进 Secret，不要写在 values 里：
 
