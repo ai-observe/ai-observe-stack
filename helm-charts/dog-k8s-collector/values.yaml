@@ -1,0 +1,214 @@
+# =============================================================================
+# dog-k8s-collector: collect a Kubernetes cluster into a DOG Stack gateway
+# =============================================================================
+# Two workloads, both sending OTLP to the gateway:
+#   agent   (DaemonSet, one per node)  container logs, kubelet + node metrics, node-local
+#                                      OTLP entry point, Prometheus annotations, journald
+#   cluster (Deployment, one replica)  cluster metrics, Kubernetes Events
+# Which of the two run is derived from the presets you enable.
+#
+#   helm install dog-k8s-collector ./dog-k8s-collector -n dog \
+#     --set gateway.endpoint=dog-ai-observe-stack-otel-gateway.dog.svc:4317 \
+#     --set clusterName=my-cluster
+
+# The DOG Stack gateway to send to: OTLP gRPC host:port. Required.
+# A ClusterIP Service balances per connection: each collector pod keeps one gRPC connection to
+# one gateway replica. To spread load across replicas, point at the gateway's headless Service
+# with the dns scheme and enable client-side round robin:
+#   endpoint: dns:///dog-ai-observe-stack-otel-gateway-headless.dog.svc:4317
+#   balancerName: round_robin
+gateway:
+  endpoint: ""
+  balancerName: ""
+  tls:
+    insecure: true
+
+# Stamped on every record as k8s.cluster.name. Empty = Helm release name.
+clusterName: ""
+# generic | k3s | eks | gke | aks | ack | openshift
+# Selects the cloud resource detectors and the journald unit names.
+platform: generic
+# IANA zone assumed for log lines that print a time without one (rules can override
+# with timestamp.timezone). The node's zoneinfo is mounted into the agent for this.
+timezone: UTC
+# Pull secrets for the collector images (private registries)
+imagePullSecrets: []
+
+# -----------------------------------------------------------------------------
+# What to collect
+# -----------------------------------------------------------------------------
+presets:
+  # Container stdout / stderr from /var/log/pods (agent). Details under `logs` below.
+  logsCollection:
+    enabled: true
+  # kubelet /stats/summary: node, pod, container and volume metrics plus CPU / memory
+  # limit utilisation (agent)
+  kubeletMetrics:
+    enabled: true
+    interval: 15s
+    insecureSkipVerify: true      # kubelet serves a self-signed certificate
+  # Node host metrics from /hostfs: cpu, memory, load, disk, filesystem, network (agent)
+  hostMetrics:
+    enabled: true
+    interval: 15s
+    processes: false              # process metrics need the host PID namespace
+  # Cluster objects: deployments, statefulsets, nodes, pods, quotas... (cluster collector)
+  clusterMetrics:
+    enabled: true
+    interval: 30s
+  # Kubernetes Events, stored as logs (cluster collector)
+  kubernetesEvents:
+    enabled: true
+  # Node-local OTLP entry point for SDKs, 4317 gRPC / 4318 HTTP (agent). Records that
+  # enter here get the same Kubernetes metadata as container logs.
+  otlp:
+    enabled: true
+    hostPortGrpc: 0               # expose on the node so SDKs can use $(HOST_IP):4317; 0 = off
+    hostPortHttp: 0
+  # Scrape pods annotated prometheus.io/scrape=true (+ prometheus.io/port, /path),
+  # sharded per node (agent). extraScrapeConfigs takes raw Prometheus scrape_configs.
+  prometheusScrape:
+    enabled: false
+    interval: 30s
+    extraScrapeConfigs: []
+  # Node journal (agent). Off: the stock images do not ship `journalctl`; build an image
+  # with systemd tools and set agent.image before enabling. Units default from `platform`
+  # (kubelet + containerd; k3s: k3s; openshift: kubelet + crio).
+  journald:
+    enabled: false
+    directory: /var/log/journal
+    units: []
+  # Kubernetes metadata attached to every record (namespace, pod, workload, node, image...)
+  # plus these pod labels / annotations
+  kubernetesAttributes:
+    labels:
+      - app.kubernetes.io/name
+      - app.kubernetes.io/component
+      - app.kubernetes.io/instance
+    annotations: []
+    # resource.opentelemetry.io/<attr> pod annotations become resource attributes
+    # (e.g. resource.opentelemetry.io/service.name)
+    otelAnnotations: true
+  # Cloud / cluster resource detection; detectors come from `platform`, add more here
+  resourceDetection:
+    enabled: true
+    extraDetectors: []
+  # Each collector scrapes its own :8888 (service.name otel-agent / otel-cluster)
+  selfMonitoring:
+    enabled: true
+
+# -----------------------------------------------------------------------------
+# Container logs (with presets.logsCollection)
+# -----------------------------------------------------------------------------
+logs:
+  # Namespaces to read. "*" = all. Exclusions win over inclusions. The collectors' own
+  # pods are always excluded.
+  namespaces:
+    include: ["*"]
+    exclude: []
+  # Container names (globs) to skip everywhere, e.g. [istio-proxy, linkerd-proxy]
+  containers:
+    exclude: []
+  # Raw extra globs for anything the two lists above cannot express, e.g. a DOG Stack
+  # gateway with debug output in this cluster: [/var/log/pods/dog_dog-*-otel-gateway-*/*/*.log]
+  excludePaths: []
+  # end = only new lines after the agent starts (safe default); beginning = backfill
+  # every existing file once (first install only, offsets are persisted afterwards)
+  startAt: end
+  maxLogSize: 1MiB
+  # Docker runtime nodes: /var/log/pods/*.log are symlinks into this directory
+  dockerContainersPath: ""
+
+  # JSON lines are parsed automatically when no rule claimed the record: keys become
+  # log_attributes, the severity is read from severityFields, the message is promoted to
+  # the body. The timestamp stays the container runtime's write time; parseTimestamp: true
+  # also tries timestampFields (four operators per candidate field). Explicit json rules
+  # always parse the timestamp and use these lists as defaults.
+  json:
+    autodetect: true
+    parseTimestamp: false
+    timestampFields: [time, timestamp, ts, "@timestamp"]
+    severityFields: [level, severity]
+    messageFields: [message, msg]
+
+  # Cluster-wide stack-trace joining. OFF by default: a wrong first-line pattern glues
+  # unrelated lines together. Presets carry their own pattern; custom rules set
+  # multiline.firstLinePattern.
+  multiline:
+    enabled: false
+    firstLinePattern: ""
+
+  # Parsing rules, evaluated in order; the first whose selector matches claims the record
+  # (log_attributes["dog.log.rule"] = name). See USER_GUIDE.md.
+  #   selector:   namespace / container (regex on the K8s names), bodyPrefix (regex on body)
+  #   preset:     <name> from files/presets/logs/; keys below override the preset's
+  #   regex:      Go RE2 with named groups; `ts` -> timestamp, `level` -> severity, `msg` -> message
+  #   json:       {timestampFields, severityFields, messageFields} for JSON lines
+  #   format:     inferred (regex / json / preset); `none` = claim without parsing
+  #   timestamp:  {layout, layoutType: strptime|gotime|epoch, timezone: Asia/Shanghai}
+  #   severity:   {field, mapping: {info: [...], warn: [...], error: [...], fatal: [...]}}
+  #   multiline:  {firstLinePattern}   per-rule stack-trace joining
+  #   drop:       [regex, ...]         records to discard on the node
+  #   quiet:      true                 (default) parse failures are not logged
+  # Example:
+  #   - name: api
+  #     selector: {namespace: "^prod$", container: "^api$"}
+  #     json: {timestampFields: [ts], severityFields: [level], messageFields: [msg]}
+  #   - name: doris-be
+  #     selector: {container: "^be$"}
+  #     preset: doris-be
+  rules: []
+
+# -----------------------------------------------------------------------------
+# How the collectors run
+# -----------------------------------------------------------------------------
+# Node agent (DaemonSet). Runs as root: /var/log/pods files are root:0640.
+agent:
+  image:
+    repository: otel/opentelemetry-collector-k8s   # every K8s component, ~50 MB
+    tag: "0.160.0"
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {cpu: "100m", memory: "128Mi"}
+    limits: {cpu: "1", memory: "512Mi"}
+  nodeSelector: {}
+  tolerations:
+    - operator: Exists
+  priorityClassName: ""
+  # file_storage on a hostPath: file offsets + persisted sending queue
+  storage:
+    enabled: true
+    hostPath: /var/lib/otelcol
+  # The otelcol-k8s image ships no time zone database; the node's is mounted read-only so
+  # rules can name a zone. "" disables the mount; the chart then refuses any zone other
+  # than UTC at render time. Nodes without /usr/share/zoneinfo (very minimal OS images) keep the
+  # pod Pending with a mount error: use UTC there, or agent.image.repository=otel/opentelemetry-collector-contrib.
+  tzdata:
+    hostPath: /usr/share/zoneinfo
+  memoryLimiter:
+    limitPercentage: 75
+    spikeLimitPercentage: 20
+  # Records buffered per node while the gateway is unreachable (persisted with storage)
+  queueSize: 20000
+  logging:
+    level: info
+  # Raw OpenTelemetry Collector config merged over the generated one (escape hatch)
+  extraConfig: {}
+
+# Cluster collector (Deployment). Several replicas use leader election.
+cluster:
+  image:
+    repository: otel/opentelemetry-collector-k8s
+    tag: "0.160.0"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests: {cpu: "50m", memory: "128Mi"}
+    limits: {cpu: "500m", memory: "512Mi"}
+  nodeSelector: {}
+  tolerations: []
+  leaderElection:
+    enabled: true
+  logging:
+    level: info
+  extraConfig: {}

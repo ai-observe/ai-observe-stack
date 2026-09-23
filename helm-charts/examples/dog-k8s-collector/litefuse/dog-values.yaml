@@ -1,0 +1,38 @@
+# litefuse reference deployment, part 1: the DOG Stack itself on the k3s node vm-152,
+# writing into the Doris cluster that ships with litefuse (a separate `otel` database).
+#
+#   helm upgrade --install dog-stack ./ai-observe-stack -n dog-stack --create-namespace \
+#     -f examples/dog-k8s-collector/litefuse/dog-values.yaml
+
+doris:
+  mode: external
+  database: otel
+  external:
+    host: litefuse-prod-doris-fe-service.litefuse-prod.svc
+    port: 9030
+    feHttpPort: 8030
+    user: root
+    password: ""
+  internal:
+    operator:
+      enabled: false
+
+gateway:
+  replicas: 1
+  persistence:
+    enabled: true
+    size: 5Gi
+  dorisExporter:
+    historyDays: 7
+    createHistoryDays: 1
+    replicationNum: 1
+    sendingQueue:
+      numConsumers: 4
+      queueSize: 20000
+      batch: {flushTimeout: 5s, minSize: 2048, maxSize: 8192}
+  debug:
+    enabled: true          # demo: the gateway prints a sample of what it writes
+    verbosity: basic
+
+grafana:
+  adminPassword: admin

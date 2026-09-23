@@ -1,0 +1,10 @@
+# nginx access log, "combined" format:
+# 10.0.0.1 - - [10/Sep/2026:10:00:00 +0000] "GET / HTTP/1.1" 200 612 "-" "curl/8.0"
+# Severity is derived from the HTTP status.
+format: regex
+regex: '^(?P<remote_addr>\S+) - (?P<remote_user>\S+) \[(?P<ts>[^\]]+)\] "(?P<request>[^"]*)" (?P<status>\d{3}) (?P<body_bytes_sent>\d+) "(?P<http_referer>[^"]*)" "(?P<http_user_agent>[^"]*)"'
+timestamp:
+  layout: "%d/%b/%Y:%H:%M:%S %z"
+severity:
+  field: status
+  mapping: {info: [2xx, 3xx], warn: [4xx], error: [5xx]}

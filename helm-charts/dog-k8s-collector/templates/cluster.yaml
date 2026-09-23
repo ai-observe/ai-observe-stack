@@ -1,0 +1,129 @@
+{{/*
+Cluster collector Deployment + RBAC. Configuration is in configmap-cluster.yaml.
+*/}}
+{{- if include "dogc.cluster.enabled" . | eq "true" }}
+{{- $c := .Values.cluster }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "dogc.cluster.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "dogc.cluster.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster
+rules:
+  # k8s_cluster
+  - apiGroups: [""]
+    resources: [events, namespaces, namespaces/status, nodes, nodes/spec, pods, pods/status, replicationcontrollers, replicationcontrollers/status, resourcequotas, services, persistentvolumes, persistentvolumeclaims]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [daemonsets, deployments, replicasets, statefulsets]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  - apiGroups: [autoscaling]
+    resources: [horizontalpodautoscalers]
+    verbs: [get, list, watch]
+  # k8s_objects (events)
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [get, list, watch]
+  {{- if $c.leaderElection.enabled }}
+  - apiGroups: [coordination.k8s.io]
+    resources: [leases]
+    verbs: [get, list, watch, create, update, patch, delete]
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "dogc.cluster.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "dogc.cluster.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "dogc.cluster.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dogc.cluster.fullname" . }}
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cluster
+spec:
+  replicas: {{ $c.replicas }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "dogc.name" . }}-cluster
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "dogc.name" . }}-cluster
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: cluster
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-cluster.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "dogc.cluster.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $c.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $c.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: cluster
+          image: "{{ $c.image.repository }}:{{ $c.image.tag }}"
+          imagePullPolicy: {{ $c.image.pullPolicy }}
+          args: ["--config=/etc/otelcol/config.yaml"]
+          env:
+            - name: K8S_NAMESPACE
+              valueFrom: {fieldRef: {fieldPath: metadata.namespace}}
+            - name: GOMEMLIMIT
+              valueFrom: {resourceFieldRef: {resource: limits.memory}}
+          ports:
+            - {name: health-check, containerPort: 13133}
+            - {name: metrics, containerPort: 8888}
+          livenessProbe:
+            httpGet: {path: /, port: health-check}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /, port: health-check}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml $c.resources | nindent 12 }}
+          volumeMounts:
+            - {name: config, mountPath: /etc/otelcol, readOnly: true}
+            - {name: file-storage, mountPath: /var/lib/otelcol}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "dogc.cluster.fullname" . }}-config
+        - name: file-storage
+          emptyDir: {}
+{{- end }}

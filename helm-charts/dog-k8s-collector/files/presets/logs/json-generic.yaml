@@ -1,0 +1,7 @@
+# Single-line JSON logs (zap, pino, bunyan, logrus, structlog...). Timestamp, severity and
+# message are looked up in the candidate fields; defaults come from values `logs.json`.
+# The message is promoted to the body, every other key becomes a log attribute.
+format: json
+selector:
+  bodyPrefix: '^\s*\{'
+json: {}

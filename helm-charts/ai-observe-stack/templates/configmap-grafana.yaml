@@ -1,9 +1,9 @@
 {{/*
-Grafana Provisioning ConfigMaps
+Grafana provisioning: Doris datasource (credentials from the Doris Secret via env vars),
+dashboard providers, doris-app plugin.
 */}}
 {{- if .Values.grafana.enabled }}
 ---
-# Datasources ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -14,17 +14,13 @@ metadata:
     grafana_datasource: "1"
 data:
   datasources.yaml: |
-    # Grafana Datasource Provisioning
-    # Auto-provision Doris as MySQL-compatible datasource
     apiVersion: 1
-
     datasources:
-      # Apache Doris - MySQL Protocol
       - name: Doris
         type: mysql
         uid: doris
         url: {{ include "aiobs.doris.mysqlEndpoint" . }}
-        user: {{ include "aiobs.doris.user" . }}
+        user: $DORIS_USERNAME
         database: {{ include "aiobs.doris.database" . }}
         isDefault: true
         jsonData:
@@ -33,11 +29,9 @@ data:
           connMaxLifetime: 14400
           tlsSkipVerify: true
         secureJsonData:
-          password: "{{ include "aiobs.doris.password" . }}"
+          password: $DORIS_PASSWORD
         editable: true
-
 ---
-# Dashboard Providers ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -47,9 +41,7 @@ metadata:
     app.kubernetes.io/component: grafana
 data:
   dashboards.yaml: |
-    # Grafana Dashboard Provisioning
     apiVersion: 1
-
     providers:
       - name: 'AIObserve Stack Dashboards'
         orgId: 1
@@ -61,10 +53,18 @@ data:
         allowUiUpdates: true
         options:
           path: /var/lib/grafana/dashboards/aiobs
+      - name: 'AIObserve Stack Kubernetes'
+        orgId: 1
+        folder: 'Kubernetes'
+        folderUid: aiobs-kubernetes
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 30
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards/extra
 {{- if .Values.dorisPlugin.enabled }}
-
 ---
-# Plugin Apps ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -74,9 +74,7 @@ metadata:
     app.kubernetes.io/component: grafana
 data:
   plugins.yaml: |
-    # Grafana Plugin App Provisioning
     apiVersion: 1
-
     apps:
       - type: {{ .Values.dorisPlugin.pluginId | quote }}
         org_id: 1

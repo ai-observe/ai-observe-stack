@@ -1,0 +1,12 @@
+# glog family. Accepts both the reference layout and the common Go variants:
+#   C++/Go glog : "I0909 09:41:28.262837  1234 file.cc:353] msg"   (thread id + "]")
+#   SeaweedFS   : "I0909 09:41:28.262837 topology_vacuum.go:353 msg" (no thread id, no "]")
+# The timestamp carries no year, so the record keeps the container write time; the parsed
+# clock is kept as log_attributes.logtime.
+format: regex
+regex: '^(?P<level>[IWEF])(?P<logtime>\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\s+(?:(?P<tid>\d+)\s+)?(?P<location>[^\s\]]+)\]?\s?(?P<msg>(?s:.*))$'
+multiline:
+  firstLinePattern: '^[IWEF]\d{4} '
+severity:
+  field: level
+  mapping: {info: [I], warn: [W], error: [E], fatal: [F]}

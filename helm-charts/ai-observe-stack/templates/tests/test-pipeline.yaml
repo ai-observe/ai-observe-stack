@@ -1,0 +1,54 @@
+{{/*
+`helm test`: send one OTLP log record to the gateway and check that it reached Doris.
+*/}}
+{{- if .Values.gateway.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "aiobs.fullname" . }}-test-pipeline
+  labels:
+    {{- include "aiobs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  restartPolicy: Never
+  containers:
+    - name: test
+      image: curlimages/curl:8.10.1
+      env:
+        - name: DORIS_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "aiobs.doris.secretName" . }}
+              key: {{ include "aiobs.doris.secretUserKey" . }}
+        - name: DORIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "aiobs.doris.secretName" . }}
+              key: {{ include "aiobs.doris.secretPasswordKey" . }}
+      command:
+        - sh
+        - -ec
+        - |
+          MARK="dog-helm-test-$(date +%s)"
+          NOW="$(date +%s)000000000"
+          echo "sending log record $MARK to the gateway"
+          curl -sfS -X POST {{ include "aiobs.gateway.otlpHttpEndpoint" . }}/v1/logs \
+            -H 'Content-Type: application/json' \
+            -d "{\"resourceLogs\":[{\"resource\":{\"attributes\":[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"helm-test\"}}]},\"scopeLogs\":[{\"logRecords\":[{\"timeUnixNano\":\"$NOW\",\"severityText\":\"INFO\",\"severityNumber\":9,\"body\":{\"stringValue\":\"$MARK\"}}]}]}]}"
+          echo; echo "waiting for the gateway to flush to Doris"
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            sleep 10
+            RESP=$(curl -s -u "$DORIS_USERNAME:$DORIS_PASSWORD" -H 'Content-Type: application/json' \
+              -X POST {{ include "aiobs.doris.feHttpEndpoint" . }}/api/query/default_cluster/{{ include "aiobs.doris.database" . }} \
+              -d "{\"stmt\":\"select count(*) from {{ .Values.gateway.dorisExporter.tables.logs }} where body = '$MARK'\"}" || true)
+            # the FE pretty-prints its JSON; flatten before matching "data":[[N]]
+            N=$(echo "$RESP" | tr -d ' \n\t\r' | sed -n 's/.*"data":\[\[\([0-9]*\)\]\].*/\1/p')
+            echo "attempt $i: count=${N:-?}"
+            if [ "${N:-0}" -ge 1 ]; then echo "OK: record found in Doris"; exit 0; fi
+          done
+          echo "FAIL: record not found in Doris after 120s. Last response: $RESP"
+          exit 1
+{{- end }}

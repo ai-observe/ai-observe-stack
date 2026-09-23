@@ -1,0 +1,20 @@
+{{/*
+Extra dashboards shipped with the chart (helm-charts/ai-observe-stack/files/dashboards/*.json),
+provisioned next to the doris-app plugin dashboards.
+*/}}
+{{- if and .Values.grafana.enabled (.Files.Glob "files/dashboards/*.json") }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aiobs.grafana.fullname" . }}-extra-dashboards
+  labels:
+    {{- include "aiobs.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+    grafana_dashboard: "1"
+data:
+  {{- range $path, $bytes := .Files.Glob "files/dashboards/*.json" }}
+  {{ base $path }}: |-
+    {{- $.Files.Get $path | nindent 4 }}
+  {{- end }}
+{{- end }}

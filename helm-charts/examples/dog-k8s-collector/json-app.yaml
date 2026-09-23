@@ -1,0 +1,27 @@
+# An application that logs one JSON object per line, e.g.
+#   {"ts":"2026-09-10T10:00:00.123Z","level":"error","msg":"payment failed","order":42}
+#
+# Nothing needs to be configured for this: logs.json.autodetect parses JSON lines, reads the
+# level and promotes the message to the body. Use a rule only when the field names are
+# unusual, when you want the application's own timestamp, or to drop noise, as below.
+#
+#   helm install dog-k8s-collector ./dog-k8s-collector -n dog -f examples/dog-k8s-collector/json-app.yaml
+
+gateway:
+  endpoint: dog-ai-observe-stack-otel-gateway.dog.svc:4317
+clusterName: my-cluster
+
+logs:
+  rules:
+    - name: checkout
+      selector: {namespace: "^shop$", container: "^checkout$"}
+      json:
+        timestampFields: [event_time]      # epoch millis or RFC3339 both work
+        severityFields: [lvl]
+        messageFields: [event]
+      drop:
+        - '"event":"healthcheck"'
+    # Java stack traces need multiline joining, which is off by default: presets carry it
+    - name: legacy-java
+      selector: {container: "^billing$"}
+      preset: java-spring

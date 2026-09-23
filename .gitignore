@@ -18,6 +18,9 @@ Thumbs.db
 # Logs
 *.log
 logs/
+# ...but not the chart's log presets and the example sample logs
+!helm-charts/dog-k8s-collector/files/presets/logs/
+!helm-charts/examples/dog-k8s-collector/litefuse/sample-logs/*.log
 
 # Helm
 *.tgz

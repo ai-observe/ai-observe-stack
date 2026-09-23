@@ -1,0 +1,48 @@
+I20260910 09:44:34.415171 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644432800, tablet=1787644432862, transaction_id=15040, version=3819, num_rows=0, res=[OK], cost: 500(us) 
+I20260910 09:44:34.415323 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644432800, tablet=1787644432856, transaction_id=15040, version=3819, num_rows=0, res=[OK], cost: 673(us) 
+I20260910 09:44:34.415372 443 engine_publish_version_task.cpp:370] finish to publish version on transaction.transaction_id=15040, cost(us): 758, error_tablet_size=0, res=[OK]
+I20260910 09:44:34.415418 443 task_worker_pool.cpp:2141] successfully publish version|signature=15040|transaction_id=15040|tablets_num=3|cost(s)=0
+I20260910 09:44:34.429179 443 stream_load.cpp:142] finished to execute stream load. label=open_telemetry_otel_otel_logs_20260910094434_72f9e592-4608-470b-aeeb-fc5dad1b425b, txn_id=15040, query_id=e441bf9a5b08a8f1-210828cc365bba89, load_cost_ms=79, receive_data_cost_ms=4, read_data_cost_ms=0, write_data_cost_ms=55, commit_and_publish_txn_cost_ms=19, number_total_rows=431, number_loaded_rows=431, receive_bytes=688663, loaded_bytes=621105, error_url=
+I20260910 09:44:34.434908 443 task_worker_pool.cpp:427] successfully submit task|type=UPDATE_VISIBLE_VERSION|signature=-1
+I20260910 09:44:34.801632 443 compaction.cpp:416] start to do ordered data compaction, tablet=1787644433218, output_version=[3355-3363]
+I20260910 09:44:34.808377 443 compaction.cpp:642] succeed to do ordered data cumulative compaction. tablet=1787644433218, output_version=[3355-3363], disk=/opt/apache-doris/be/storage, segments=0, input_row_num=0, output_row_num=0, input_rowsets_data_size=0, input_rowsets_index_size=0, input_rowsets_total_size=0, output_rowset_data_size=0, output_rowset_index_size=0, output_rowset_total_size=0. elapsed time=0.006898s.
+I20260910 09:44:35.079027 443 backend_service.cpp:1291] query for dictionary status, return 0 rows
+I20260910 09:44:35.809967 443 storage_engine.cpp:1230] start to delete unused rowset, size: 0, unused delete bitmap size: 0
+I20260910 09:44:35.810052 443 storage_engine.cpp:1288] collected 0 unused rowsets to remove, skipped 0 rowsets due to use count > 1, skipped 0 rowsets due to don't need to delete file, skipped 0 rowsets due to delayed expired timestamp. left 0 unused delete bitmap.
+I20260910 09:44:35.810065 443 storage_engine.cpp:1313] removed all collected unused rowsets
+I20260910 09:44:37.794991 443 wal_manager.cpp:496] Scheduled(every 10s) WAL info: [/opt/apache-doris/be/storage/wal: limit 8733932748 Bytes, used 0 Bytes, estimated wal bytes 0 Bytes, available 8733932748 Bytes.];
+I20260910 09:44:38.119596 443 tablets_channel.cpp:162] open tablets channel (load_id=bb40507ff905216c-3208eb9bac19f588, index_id=1787644433159), tablets num: 12 timeout(s): 60, init senders 1 with incremental off
+I20260910 09:44:38.134791 443 tablets_channel.cpp:283] txn 15041: close tablets channel of index 1787644433159 , sender id: 0, backend 1787644418423, remain senders: 0
+I20260910 09:44:38.135673 443 load_channel.cpp:249] txn 15041 closed tablets_channel 1787644433159
+I20260910 09:44:38.135850 443 load_channel.cpp:85] load channel removed load_id=bb40507ff905216c-3208eb9bac19f588, is high priority=1, sender_ip=litefuse-prod-doris-be-2.litefuse-prod-doris-be-internal.litefuse-prod.svc.cluster.local, index id: 1787644433159, total_received_rows: 0, num_rows_filtered: 0
+I20260910 09:44:38.140429 443 tablets_channel.cpp:162] open tablets channel (load_id=244306217a10cc2a-86d6d986a5ae198c, index_id=1787644433072), tablets num: 9 timeout(s): 60, init senders 1 with incremental off
+I20260910 09:44:38.159217 443 tablets_channel.cpp:283] txn 15042: close tablets channel of index 1787644433072 , sender id: 0, backend 1787644418423, remain senders: 0
+I20260910 09:44:38.169508 443 task_worker_pool.cpp:427] successfully submit task|type=PUBLISH_VERSION|signature=15041
+I20260910 09:44:38.169831 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433158, tablet=1787644433212, transaction_id=15041, version=3365, num_rows=0, res=[OK], cost: 261(us) 
+I20260910 09:44:38.169965 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433158, tablet=1787644433218, transaction_id=15041, version=3365, num_rows=0, res=[OK], cost: 381(us) 
+I20260910 09:44:38.170033 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433158, tablet=1787644433224, transaction_id=15041, version=3365, num_rows=0, res=[OK], cost: 442(us) 
+I20260910 09:44:38.170034 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433158, tablet=1787644433206, transaction_id=15041, version=3365, num_rows=0, res=[OK], cost: 474(us) 
+I20260910 09:44:38.170116 443 engine_publish_version_task.cpp:370] finish to publish version on transaction.transaction_id=15041, cost(us): 584, error_tablet_size=0, res=[OK]
+I20260910 09:44:38.170145 443 task_worker_pool.cpp:2141] successfully publish version|signature=15041|transaction_id=15041|tablets_num=4|cost(s)=0
+I20260910 09:44:38.171152 443 variant_statistics.h:37] num subcolumns 0, num sparse columns 0
+I20260910 09:44:38.178181 443 variant_statistics.h:37] num subcolumns 0, num sparse columns 0
+I20260910 09:44:38.189337 443 segment_creator.cpp:276] tablet_id:1787644433133, flushing rowset_dir: /opt/apache-doris/be/storage/data/461/1787644433133/948068511, rowset_id:020000000000e94d9f4689652eb8972bb8708bd55d2a9d9d, data size:29.40 KB, index size:77.18 KB, timing breakdown: total=9ms, finalize=6ms, inverted_index=2ms, collector=0ms
+I20260910 09:44:38.189612 443 index_file_writer.cpp:245] IndexFileWriter finish_close, enable_write_index_searcher_cache: false
+I20260910 09:44:38.189841 443 task_worker_pool.cpp:427] successfully submit task|type=UPDATE_VISIBLE_VERSION|signature=-1
+I20260910 09:44:38.190071 443 load_channel.cpp:249] txn 15042 closed tablets_channel 1787644433072
+I20260910 09:44:38.190212 443 load_channel.cpp:85] load channel removed load_id=244306217a10cc2a-86d6d986a5ae198c, is high priority=1, sender_ip=litefuse-prod-doris-be-1.litefuse-prod-doris-be-internal.litefuse-prod.svc.cluster.local, index id: 1787644433072, total_received_rows: 1021, num_rows_filtered: 0
+I20260910 09:44:38.201478 443 task_worker_pool.cpp:427] successfully submit task|type=PUBLISH_VERSION|signature=15042
+I20260910 09:44:38.201815 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433071, tablet=1787644433121, transaction_id=15042, version=3365, num_rows=0, res=[OK], cost: 274(us) 
+I20260910 09:44:38.201870 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433071, tablet=1787644433133, transaction_id=15042, version=3365, num_rows=1021, res=[OK], cost: 311(us) 
+I20260910 09:44:38.202013 443 engine_publish_version_task.cpp:488] publish version successfully on tablet, table_id=1787644433071, tablet=1787644433127, transaction_id=15042, version=3365, num_rows=0, res=[OK], cost: 468(us) 
+I20260910 09:44:38.202090 443 engine_publish_version_task.cpp:370] finish to publish version on transaction.transaction_id=15042, cost(us): 590, error_tablet_size=0, res=[OK]
+I20260910 09:44:38.202142 443 task_worker_pool.cpp:2141] successfully publish version|signature=15042|transaction_id=15042|tablets_num=3|cost(s)=0
+I20260910 09:44:38.221753 443 task_worker_pool.cpp:427] successfully submit task|type=UPDATE_VISIBLE_VERSION|signature=-1
+I20260910 09:43:01.369030 443 workload_group_manager.cpp:877] 
+Query Memory Summary: 
+--
+I20260910 09:44:03.008430 443 vtablet_writer.cpp:1346] VNodeChannel[1787644433438-1787644418424], load_id=b46ca611cf1c722-2a98565293c1b881, txn_id=15022, node=litefuse-prod-doris-be-2.litefuse-prod-doris-be-internal.litefuse-prod.svc.cluster.local:8060 mark closed, left pending batch size: 1 hang_wait: 0
+I20260910 09:44:03.008693 443 workload_group_manager.cpp:243] 
+Process Memory Summary: process memory used 1.41 GB(= 1.41 GB[vm/rss] + 0[reserved] + 0B[waiting_refresh]), sys available memory 6.48 GB(= 6.48 GB[proc/available] - 0[reserved] - 0B[waiting_refresh]), all workload groups memory usage: 6.31 KB
+I20260910 09:44:03.008752 443 workload_group_manager.cpp:877] 
+Query Memory Summary: 

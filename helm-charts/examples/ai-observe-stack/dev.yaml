@@ -1,0 +1,43 @@
+# Development / laptop DOG Stack: Doris deployed by the operator with small resources,
+# single gateway, no persistence, debug exporter on. Collect the cluster with the
+# dog-k8s-collector chart (examples/dog-k8s-collector/; on a laptop also set agent.storage.enabled=false
+# there so nothing is written under /var/lib/otelcol on the node).
+
+doris:
+  mode: internal
+  internal:
+    operator:
+      enabled: true
+    cluster:
+      fe:
+        replicas: 1
+        resources:
+          requests: {cpu: 1, memory: 2Gi}
+          limits: {cpu: 2, memory: 4Gi}
+      be:
+        replicas: 1
+        resources:
+          requests: {cpu: 1, memory: 2Gi}
+          limits: {cpu: 2, memory: 4Gi}
+      persistence:
+        enabled: false
+
+gateway:
+  replicas: 1
+  persistence:
+    enabled: false
+  resources:
+    requests: {cpu: "100m", memory: "128Mi"}
+    limits: {cpu: "500m", memory: "512Mi"}
+  dorisExporter:
+    replicationNum: 1
+    historyDays: 3
+  debug:
+    enabled: true   # prints sampled records to stdout; a collector in the same cluster must exclude this pod
+                    # (dog-k8s-collector: logs.excludePaths: [/var/log/pods/dog_dog-ai-observe-stack-otel-gateway-*/*/*.log])
+
+
+grafana:
+  adminPassword: admin
+  persistence:
+    enabled: false

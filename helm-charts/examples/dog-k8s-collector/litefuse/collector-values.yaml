@@ -1,0 +1,56 @@
+# litefuse reference deployment, part 2: collect the litefuse-prod namespace into the
+# gateway installed by dog-values.yaml. Seven log formats, six of them presets.
+#
+#   helm upgrade --install dog-k8s-collector ./dog-k8s-collector -n dog-stack \
+#     -f examples/dog-k8s-collector/litefuse/collector-values.yaml
+#
+# What this exercises:
+#   - two formats in one container (Doris FE runtime + audit lines): two rules, bodyPrefix in the presets
+#   - empty header messages (Doris BE memory summaries): preset regex uses `\]\s?`
+#   - timestamps without a zone (Doris, PostgreSQL): read in `timezone` (UTC)
+#   - a container whose format is not glog exactly (SeaweedFS): the relaxed glog preset
+
+gateway:
+  endpoint: dog-stack-ai-observe-stack-otel-gateway.dog-stack.svc:4317
+
+clusterName: vm-152
+platform: k3s
+
+presets:
+  prometheusScrape:
+    enabled: true          # traefik in kube-system carries prometheus.io/scrape=true
+
+logs:
+  namespaces:
+    include: [litefuse-prod]
+  containers:
+    exclude: [dorisoperator, litefuse-prod-redis-init]
+  rules:
+    - name: litefuse                                   # web / worker: "2026-09-10T09:09:15.866Z info \tmsg"
+      selector: {container: "^litefuse-(web|worker)$"}
+      regex: '^(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+(?P<level>[a-z]+)\s*(?P<msg>(?s:.*))$'
+      timestamp: {layout: "%Y-%m-%dT%H:%M:%S.%L%z"}   # %z reads the trailing Z
+      severity: {field: level}
+    - name: doris-fe
+      selector: {container: "^fe$"}
+      preset: doris-fe
+    - name: doris-fe-audit
+      selector: {container: "^fe$"}
+      preset: doris-fe-audit
+    - name: doris-be
+      selector: {container: "^be$"}
+      preset: doris-be
+    - name: postgres
+      selector: {container: "^postgresql$"}
+      preset: postgres
+    - name: redis
+      selector: {container: "^litefuse-prod-redis$"}
+      preset: redis
+    - name: seaweedfs
+      selector: {container: "^seaweedfs$"}
+      preset: glog
+
+agent:
+  resources:
+    requests: {cpu: "100m", memory: "128Mi"}
+    limits: {cpu: "1", memory: "512Mi"}

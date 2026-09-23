@@ -1,0 +1,43 @@
+{
+  "uid": "dog-k8s-events",
+  "title": "Kubernetes Events",
+  "tags": ["dog-stack", "kubernetes", "events"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {"from": "now-6h", "to": "now"},
+  "refresh": "1m",
+  "templating": {
+    "list": [
+      {"name": "datasource", "type": "datasource", "query": "mysql", "label": "Datasource", "current": {"text": "Doris", "value": "doris"}, "hide": 0},
+      {"name": "namespace", "type": "query", "label": "Namespace", "datasource": {"type": "mysql", "uid": "${datasource}"}, "multi": true, "includeAll": true, "allValue": ".*", "refresh": 2, "sort": 1,
+       "query": "SELECT DISTINCT json_extract_string(body, '$.object.regarding.namespace') AS __text FROM otel.otel_logs WHERE timestamp >= NOW() - INTERVAL 24 HOUR AND CAST(log_attributes['k8s.resource.name'] AS VARCHAR) = 'events' ORDER BY 1",
+       "current": {"text": "All", "value": "$__all"}},
+      {"name": "type", "type": "custom", "label": "Type", "query": "Normal,Warning", "multi": true, "includeAll": true, "allValue": ".*", "current": {"text": "All", "value": "$__all"}}
+    ]
+  },
+  "panels": [
+    {"type": "stat", "title": "Warning events", "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0}, "datasource": {"type": "mysql", "uid": "${datasource}"},
+     "fieldConfig": {"defaults": {"color": {"mode": "thresholds"}, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 20}]}}},
+     "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "none"},
+     "targets": [{"refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT count(*) AS warnings FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(log_attributes['k8s.resource.name'] AS VARCHAR) = 'events' AND json_extract_string(body, '$.object.type') = 'Warning' AND json_extract_string(body, '$.object.regarding.namespace') REGEXP '^(${namespace:regex})$'"}]},
+    {"type": "stat", "title": "All events", "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0}, "datasource": {"type": "mysql", "uid": "${datasource}"},
+     "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "none", "graphMode": "none"},
+     "targets": [{"refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT count(*) AS events FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(log_attributes['k8s.resource.name'] AS VARCHAR) = 'events' AND json_extract_string(body, '$.object.regarding.namespace') REGEXP '^(${namespace:regex})$'"}]},
+    {"type": "bargauge", "title": "Top reasons", "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}, "datasource": {"type": "mysql", "uid": "${datasource}"},
+     "options": {"orientation": "horizontal", "displayMode": "gradient", "reduceOptions": {"calcs": ["lastNotNull"]}},
+     "targets": [{"refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT CONCAT(json_extract_string(body, '$.object.type'), ' / ', json_extract_string(body, '$.object.reason')) AS reason, count(*) AS events FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(log_attributes['k8s.resource.name'] AS VARCHAR) = 'events' AND json_extract_string(body, '$.object.type') REGEXP '^(${type:regex})$' AND json_extract_string(body, '$.object.regarding.namespace') REGEXP '^(${namespace:regex})$' GROUP BY 1 ORDER BY 2 DESC LIMIT 12"}]},
+    {"type": "timeseries", "title": "Events over time", "gridPos": {"h": 4, "w": 12, "x": 0, "y": 4}, "datasource": {"type": "mysql", "uid": "${datasource}"},
+     "fieldConfig": {"defaults": {"custom": {"drawStyle": "bars", "fillOpacity": 80, "stacking": {"mode": "normal"}, "lineWidth": 0}},
+       "overrides": [{"matcher": {"type": "byName", "options": "Warning"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]}, {"matcher": {"type": "byName", "options": "Normal"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]}]},
+     "targets": [{"refId": "A", "format": "time_series", "rawQuery": true, "rawSql": "SELECT FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(timestamp) / 300) * 300) AS time, json_extract_string(body, '$.object.type') AS metric, count(*) AS value FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(log_attributes['k8s.resource.name'] AS VARCHAR) = 'events' AND json_extract_string(body, '$.object.regarding.namespace') REGEXP '^(${namespace:regex})$' GROUP BY 1, 2 ORDER BY 1"}]},
+    {"type": "table", "title": "Events", "gridPos": {"h": 18, "w": 24, "x": 0, "y": 8}, "datasource": {"type": "mysql", "uid": "${datasource}"},
+     "fieldConfig": {"defaults": {"custom": {"filterable": true}}, "overrides": [
+       {"matcher": {"type": "byName", "options": "type"}, "properties": [{"id": "custom.cellOptions", "value": {"type": "color-text"}}, {"id": "mappings", "value": [{"type": "value", "options": {"Warning": {"color": "orange", "index": 0}, "Normal": {"color": "green", "index": 1}}}]}]},
+       {"matcher": {"type": "byName", "options": "note"}, "properties": [{"id": "custom.width", "value": 600}]}]},
+     "options": {"sortBy": [{"displayName": "time", "desc": true}]},
+     "targets": [{"refId": "A", "format": "table", "rawQuery": true, "rawSql": "SELECT timestamp AS time, json_extract_string(body, '$.object.type') AS type, json_extract_string(body, '$.object.reason') AS reason, json_extract_string(body, '$.object.regarding.kind') AS kind, json_extract_string(body, '$.object.regarding.namespace') AS namespace, json_extract_string(body, '$.object.regarding.name') AS name, json_extract_string(body, '$.object.note') AS note, json_extract_string(body, '$.object.deprecatedCount') AS count FROM otel.otel_logs WHERE $__timeFilter(timestamp) AND CAST(log_attributes['k8s.resource.name'] AS VARCHAR) = 'events' AND json_extract_string(body, '$.object.type') REGEXP '^(${type:regex})$' AND json_extract_string(body, '$.object.regarding.namespace') REGEXP '^(${namespace:regex})$' ORDER BY timestamp DESC LIMIT 500"}]}
+  ]
+}

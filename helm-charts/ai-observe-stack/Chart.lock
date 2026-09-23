@@ -1,0 +1,6 @@
+dependencies:
+- name: doris-operator
+  repository: https://charts.selectdb.com
+  version: 1.6.1
+digest: sha256:71c3e3469854d9d6f3bad551d807cc73ffd571c37df1e9e9e459c3188c8822a5
+generated: "2026-09-10T10:40:47.776051+08:00"

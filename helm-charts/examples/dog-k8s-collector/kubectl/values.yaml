@@ -1,0 +1,16 @@
+# Values used to render collectors.yaml (dog-k8s-collector without Helm). Change what you need
+# here and run ./render.sh; do not edit collectors.yaml by hand.
+
+gateway:
+  endpoint: dog-ai-observe-stack-otel-gateway.dog.svc:4317   # your DOG Stack gateway, OTLP gRPC
+
+clusterName: my-cluster        # stamped as k8s.cluster.name on every record
+platform: generic              # generic | k3s | eks | gke | aks | ack | openshift
+
+# Collection defaults: every namespace, JSON auto-detect, kubelet / host / cluster metrics, Events.
+# Parsing rules for your own log formats work exactly as in the chart (USER_GUIDE.md):
+# logs:
+#   rules:
+#     - name: api
+#       selector: {namespace: "^shop$", container: "^api$"}
+#       preset: java-spring

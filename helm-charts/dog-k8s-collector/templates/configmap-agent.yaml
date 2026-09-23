@@ -1,0 +1,494 @@
+{{/*
+Node agent configuration (DaemonSet).
+The log rule engine lives here: logs.rules + files/presets/logs/*.yaml -> file_log operators.
+*/}}
+{{- define "dogc.agent.config" -}}
+{{- $root := . -}}
+{{- $a := .Values.agent -}}
+{{- $p := .Values.presets -}}
+{{- $logs := .Values.logs -}}
+{{- $ka := $p.kubernetesAttributes -}}
+{{- $endpoint := include "dogc.gateway.endpoint" . -}}
+{{- $rules := (include "dogc.logs.resolvedRules" . | fromYaml).rules | default list -}}
+{{- $anyMultiline := $logs.multiline.enabled -}}
+{{- range $rules }}{{ if and .multiline .multiline.firstLinePattern }}{{ $anyMultiline = true }}{{ end }}{{ end -}}
+{{- $tsField := "dog.ts" -}}
+receivers:
+  {{- if $p.logsCollection.enabled }}
+  file_log:
+    include:
+      {{- include "dogc.logs.includeGlobs" . | nindent 6 }}
+    exclude:
+      {{- include "dogc.logs.excludeGlobs" . | nindent 6 }}
+    start_at: {{ $logs.startAt }}
+    poll_interval: 200ms
+    max_log_size: {{ $logs.maxLogSize }}
+    include_file_path: true
+    include_file_name: false
+    file_cache_advise: true
+    skip_unmodified_files: true
+    {{- if $a.storage.enabled }}
+    storage: file_storage
+    {{- end }}
+    retry_on_failure:
+      enabled: true
+      initial_interval: 1s
+      max_interval: 30s
+      max_elapsed_time: 0
+    operators:
+      # ---- 1. CRI / docker envelope, partial-line join, pod identity from the path ----
+      - type: container
+        id: container
+      {{- if $anyMultiline }}
+      # ---- 2. multiline: bucket by file + stream ----
+      - type: add
+        id: source-key
+        field: attributes["dog.log.source"]
+        value: {{ printf "EXPR(attributes[\"log.file.path\"] + \"|\" + attributes[\"log.iostream\"])" | quote }}
+      {{- if $logs.multiline.enabled }}
+      - type: recombine
+        id: multiline-global
+        combine_field: body
+        is_first_entry: {{ printf "body matches %q" $logs.multiline.firstLinePattern | quote }}
+        source_identifier: attributes["dog.log.source"]
+        max_log_size: 256KiB
+        force_flush_period: 2s
+        combine_with: "\n"
+      {{- end }}
+      {{- range $rules }}
+      {{- if and .multiline .multiline.firstLinePattern }}
+      - type: recombine
+        id: multiline-{{ .name }}
+        # continuation lines never match bodyPrefix: scope by namespace / container only
+        if: {{ include "dogc.logs.ruleCondition" (dict "selector" (omit (.selector | default dict) "bodyPrefix")) | quote }}
+        combine_field: body
+        is_first_entry: {{ printf "body matches %q" .multiline.firstLinePattern | quote }}
+        source_identifier: attributes["dog.log.source"]
+        max_log_size: {{ .multiline.maxLogSize | default "256KiB" }}
+        force_flush_period: {{ .multiline.flushPeriod | default "2s" }}
+        combine_with: "\n"
+      {{- end }}
+      {{- end }}
+      - type: remove
+        id: source-key-cleanup
+        field: attributes["dog.log.source"]
+      {{- end }}
+      {{- range $rules }}
+      {{- $rule := . }}
+      {{- $cond := include "dogc.logs.ruleCondition" (merge (dict "exclusive" true) $rule) }}
+      {{- /* parse failures are quiet by default; quiet: false logs every mismatching line (use hack/test-rule.sh instead) */}}
+      {{- $onErr := ternary "send_quiet" "send" (ternary $rule.quiet true (hasKey $rule "quiet")) }}
+      # ---- rule: {{ $rule.name }} ({{ $rule.format }}{{ if $rule.preset }}, preset {{ $rule.preset }}{{ end }}) ----
+      - type: add
+        id: rule-{{ $rule.name }}
+        if: {{ $cond | quote }}
+        field: attributes["dog.log.rule"]
+        value: {{ $rule.name | quote }}
+      {{- $mine := printf "attributes[\"dog.log.rule\"] == %q" $rule.name }}
+      {{- if eq $rule.format "regex" }}
+      - type: regex_parser
+        id: parse-{{ $rule.name }}
+        if: {{ $mine | quote }}
+        on_error: {{ $onErr }}
+        regex: {{ required (printf "logs.rules[%s]: regex is required for format regex" $rule.name) $rule.regex | quote }}
+        parse_to: attributes
+        {{- if and $rule.timestamp $rule.timestamp.layout }}
+        timestamp:
+          parse_from: attributes.ts
+          layout_type: {{ $rule.timestamp.layoutType | default "strptime" }}
+          layout: {{ $rule.timestamp.layout | quote }}
+          {{- $tz := include "dogc.logs.ruleTimezone" (dict "rule" $rule "root" $) }}
+          {{- if ne $tz "UTC" }}
+          location: {{ $tz | quote }}      # zone for lines that print none (needs tzdata in the agent)
+          {{- end }}
+        {{- end }}
+        {{- if $rule.severity }}
+        severity:
+          parse_from: attributes.{{ $rule.severity.field | default "level" }}
+          overwrite_text: true      # severity_text becomes the normalized name (INFO / WARN / ERROR ...)
+          {{- with $rule.severity.mapping }}
+          mapping:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+      - type: remove
+        id: ts-cleanup-{{ $rule.name }}
+        if: {{ printf "%s and attributes.ts != nil" $mine | quote }}
+        field: attributes.ts
+      {{- else if eq $rule.format "json" }}
+      {{- $j := $rule.json | default dict }}
+      - type: json_parser
+        id: parse-{{ $rule.name }}
+        if: {{ $mine | quote }}
+        on_error: {{ $onErr }}
+        parse_to: attributes
+      {{- /* an explicit empty list means "keep the container runtime timestamp" (the auto-detect default) */}}
+      {{- $tsFields := ternary $j.timestampFields $logs.json.timestampFields (hasKey $j "timestampFields") }}
+      {{- range $fi, $f := $tsFields }}
+      - type: time_parser
+        id: time-{{ $rule.name }}-{{ $fi }}-rfc3339
+        if: {{ printf "%s and attributes[%q] != nil and type(attributes[%q]) == \"string\" and attributes[%q] matches \"^\\\\d{4}-\\\\d{2}-\\\\d{2}T\"" $mine $f $f $f | quote }}
+        on_error: send_quiet
+        parse_from: attributes[{{ $f | quote }}]
+        layout_type: gotime
+        layout: "2006-01-02T15:04:05.999999999Z07:00"
+      - type: time_parser
+        id: time-{{ $rule.name }}-{{ $fi }}-plain
+        if: {{ printf "%s and attributes[%q] != nil and type(attributes[%q]) == \"string\" and attributes[%q] matches \"^\\\\d{4}-\\\\d{2}-\\\\d{2} \"" $mine $f $f $f | quote }}
+        on_error: send_quiet
+        parse_from: attributes[{{ $f | quote }}]
+        layout_type: gotime
+        layout: "2006-01-02 15:04:05.999999999"
+        {{- $tz := include "dogc.logs.ruleTimezone" (dict "rule" $rule "root" $) }}
+        {{- if ne $tz "UTC" }}
+        location: {{ $tz | quote }}
+        {{- end }}
+      - type: time_parser
+        id: time-{{ $rule.name }}-{{ $fi }}-epoch-ms
+        if: {{ printf "%s and attributes[%q] != nil and type(attributes[%q]) == \"float\" and attributes[%q] > 100000000000" $mine $f $f $f | quote }}
+        on_error: send_quiet
+        parse_from: attributes[{{ $f | quote }}]
+        layout_type: epoch
+        layout: ms
+      - type: time_parser
+        id: time-{{ $rule.name }}-{{ $fi }}-epoch-s
+        if: {{ printf "%s and attributes[%q] != nil and type(attributes[%q]) == \"float\" and attributes[%q] <= 100000000000" $mine $f $f $f | quote }}
+        on_error: send_quiet
+        parse_from: attributes[{{ $f | quote }}]
+        layout_type: epoch
+        layout: s
+      {{- end }}
+      {{- range $f := ($j.severityFields | default $logs.json.severityFields) }}
+      - type: severity_parser
+        id: severity-{{ $rule.name }}-{{ $f }}
+        if: {{ printf "%s and attributes[%q] != nil" $mine $f | quote }}
+        on_error: send_quiet
+        parse_from: attributes[{{ $f | quote }}]
+        overwrite_text: true
+        mapping:
+          {{- if $rule.severity }}{{ with $rule.severity.mapping }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}{{ else }}
+          # pino / bunyan numeric levels on top of the built-in names
+          trace: ["10"]
+          debug: ["20"]
+          info: ["30"]
+          warn: ["40"]
+          error: ["50"]
+          fatal: ["60"]
+          {{- end }}
+      {{- end }}
+      {{- range $f := ($j.messageFields | default $logs.json.messageFields) }}
+      - type: move
+        id: message-{{ $rule.name }}-{{ $f }}
+        if: {{ printf "%s and attributes[%q] != nil" $mine $f | quote }}
+        from: attributes[{{ $f | quote }}]
+        to: body
+      {{- end }}
+      {{- end }}
+      {{- range $i, $pat := ($rule.drop | default list) }}
+      - type: filter
+        id: drop-{{ $rule.name }}-{{ $i }}
+        expr: {{ printf "%s and body matches %q" $mine $pat | quote }}
+      {{- end }}
+      {{- end }}
+  {{- end }}
+
+  {{- if $p.kubeletMetrics.enabled }}
+  kubelet_stats:
+    collection_interval: {{ $p.kubeletMetrics.interval }}
+    auth_type: serviceAccount
+    endpoint: "https://${env:K8S_NODE_IP}:10250"
+    insecure_skip_verify: {{ $p.kubeletMetrics.insecureSkipVerify }}
+    node: "${env:K8S_NODE_NAME}"
+    k8s_api_config:
+      auth_type: serviceAccount
+    metric_groups: [node, pod, container, volume]
+    metrics:
+      k8s.pod.cpu_limit_utilization: {enabled: true}
+      k8s.pod.memory_limit_utilization: {enabled: true}
+      k8s.container.cpu_limit_utilization: {enabled: true}
+      k8s.container.memory_limit_utilization: {enabled: true}
+  {{- end }}
+
+  {{- if $p.hostMetrics.enabled }}
+  host_metrics:
+    collection_interval: {{ $p.hostMetrics.interval }}
+    root_path: /hostfs
+    scrapers:
+      cpu:
+        metrics:
+          system.cpu.utilization: {enabled: true}
+      memory:
+        metrics:
+          system.memory.utilization: {enabled: true}
+      load: {}
+      disk: {}
+      filesystem:
+        exclude_mount_points:
+          mount_points: ["/dev/.*", "/proc/.*", "/sys/.*", "/run/.*", "/var/lib/docker/.*", "/var/lib/kubelet/.*", "/var/lib/rancher/.*", "/snap/.*", "/hostfs/dev/.*", "/hostfs/proc/.*", "/hostfs/sys/.*", "/hostfs/run/.*", "/hostfs/var/lib/kubelet/.*", "/hostfs/var/lib/rancher/.*", "/hostfs/var/lib/docker/.*"]
+          match_type: regexp
+        exclude_fs_types:
+          fs_types: [autofs, binfmt_misc, bpf, cgroup2, configfs, debugfs, devpts, devtmpfs, fusectl, hugetlbfs, iso9660, mqueue, nsfs, overlay, proc, procfs, pstore, rpc_pipefs, securityfs, selinuxfs, squashfs, sysfs, tracefs, tmpfs]
+          match_type: strict
+      network: {}
+      {{- if $p.hostMetrics.processes }}
+      processes: {}
+      {{- end }}
+  {{- end }}
+
+  {{- if $p.journald.enabled }}
+  journald:
+    directory: {{ $p.journald.directory }}
+    units:
+      {{- include "dogc.platform.journaldUnits" . | nindent 6 }}
+    priority: info
+    start_at: end
+    {{- if $a.storage.enabled }}
+    storage: file_storage
+    {{- end }}
+  {{- end }}
+
+  {{- if $p.otlp.enabled }}
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  {{- end }}
+
+  {{- if or $p.prometheusScrape.enabled $p.prometheusScrape.extraScrapeConfigs }}
+  prometheus:
+    config:
+      scrape_configs:
+        {{- if $p.prometheusScrape.enabled }}
+        - job_name: k8s-pods-annotated
+          scrape_interval: {{ $p.prometheusScrape.interval }}
+          kubernetes_sd_configs:
+            - role: pod
+              selectors:
+                - role: pod
+                  field: "spec.nodeName=${env:K8S_NODE_NAME}"
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+              action: keep
+              regex: "true"
+            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              action: replace
+              target_label: __metrics_path__
+              regex: (.+)
+            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+              action: replace
+              regex: ([^:]+)(?::\d+)?;(\d+)
+              replacement: $$1:$$2
+              target_label: __address__
+            - source_labels: [__meta_kubernetes_namespace]
+              target_label: k8s_namespace_name
+            - source_labels: [__meta_kubernetes_pod_name]
+              target_label: k8s_pod_name
+            - source_labels: [__meta_kubernetes_pod_uid]
+              target_label: k8s_pod_uid
+        {{- end }}
+        {{- with $p.prometheusScrape.extraScrapeConfigs }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+  {{- end }}
+
+  {{- if $p.selfMonitoring.enabled }}
+  prometheus/self:
+    config:
+      scrape_configs:
+        - job_name: otel-agent
+          scrape_interval: 30s
+          static_configs:
+            - targets: ['localhost:8888']
+  {{- end }}
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: {{ $a.memoryLimiter.limitPercentage }}
+    spike_limit_percentage: {{ $a.memoryLimiter.spikeLimitPercentage }}
+  {{- if or $p.prometheusScrape.enabled $p.prometheusScrape.extraScrapeConfigs }}
+  # scraped metrics carry the pod identity as datapoint labels; k8s_attributes associates on
+  # resource attributes, so promote them first (the workload name and labels then get attached
+  # and the gateway derives service.name from the workload instead of the scrape job)
+  transform/prometheus_resource:
+    error_mode: ignore
+    metric_statements:
+      - context: datapoint
+        statements:
+          - set(resource.attributes["k8s.pod.uid"], attributes["k8s_pod_uid"]) where attributes["k8s_pod_uid"] != nil
+          - set(resource.attributes["k8s.namespace.name"], attributes["k8s_namespace_name"]) where attributes["k8s_namespace_name"] != nil
+          - set(resource.attributes["k8s.pod.name"], attributes["k8s_pod_name"]) where attributes["k8s_pod_name"] != nil
+          - delete_key(attributes, "k8s_pod_uid")
+          - delete_key(attributes, "k8s_namespace_name")
+          - delete_key(attributes, "k8s_pod_name")
+      - context: resource
+        statements:
+          - delete_key(attributes, "service.name") where attributes["service.name"] == "k8s-pods-annotated"
+  {{- end }}
+  k8s_attributes:
+    auth_type: serviceAccount
+    wait_for_metadata: true
+    wait_for_metadata_timeout: 30s
+    watch_sync_period: 0s
+    pod_delete_grace_period: 120s
+    filter:
+      node_from_env_var: K8S_NODE_NAME
+    extract:
+      metadata:
+        - k8s.namespace.name
+        - k8s.pod.name
+        - k8s.pod.uid
+        - k8s.pod.start_time
+        - k8s.deployment.name
+        - k8s.statefulset.name
+        - k8s.daemonset.name
+        - k8s.job.name
+        - k8s.cronjob.name
+        - k8s.node.name
+        - k8s.container.name
+        - container.image.name
+        - container.image.tag
+        - k8s.cluster.uid
+      {{- with $ka.labels }}
+      labels:
+        {{- range . }}
+        - {tag_name: {{ . | quote }}, key: {{ . | quote }}, from: pod}
+        {{- end }}
+      {{- end }}
+      {{- with $ka.annotations }}
+      annotations:
+        {{- range . }}
+        - {tag_name: {{ . | quote }}, key: {{ . | quote }}, from: pod}
+        {{- end }}
+      {{- end }}
+      otel_annotations: {{ $ka.otelAnnotations }}
+    pod_association:
+      - sources: [{from: resource_attribute, name: k8s.pod.uid}]
+      - sources: [{from: resource_attribute, name: k8s.pod.ip}]
+      - sources: [{from: resource_attribute, name: k8s.namespace.name}, {from: resource_attribute, name: k8s.pod.name}]
+      - sources: [{from: connection}]
+  {{- if $p.resourceDetection.enabled }}
+  resource_detection:
+    detectors:
+      {{- include "dogc.platform.detectors" . | nindent 6 }}
+    override: false
+    timeout: 5s
+  {{- end }}
+  resource:
+    attributes:
+      - {key: k8s.cluster.name, value: {{ include "dogc.clusterName" . | quote }}, action: upsert}
+
+exporters:
+  otlp_grpc:
+    endpoint: {{ $endpoint | quote }}
+    {{- with .Values.gateway.balancerName }}
+    balancer_name: {{ . }}
+    {{- end }}
+    tls:
+      insecure: {{ .Values.gateway.tls.insecure }}
+    sending_queue:
+      enabled: true
+      num_consumers: 4
+      queue_size: {{ $a.queueSize }}
+      sizer: items
+      block_on_overflow: true
+      {{- if $a.storage.enabled }}
+      storage: file_storage
+      {{- end }}
+      batch:
+        flush_timeout: 2s
+        min_size: 1024
+        max_size: 8192
+        sizer: items
+    retry_on_failure:
+      enabled: true
+      initial_interval: 1s
+      max_interval: 30s
+      max_elapsed_time: 0
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  {{- if $a.storage.enabled }}
+  file_storage:
+    directory: /var/lib/otelcol/file_storage
+    create_directory: true
+    compaction:
+      on_start: true
+      on_rebound: true
+      directory: /var/lib/otelcol/file_storage/tmp
+  {{- end }}
+
+service:
+  extensions: [health_check{{ if $a.storage.enabled }}, file_storage{{ end }}]
+  telemetry:
+    logs:
+      level: {{ $a.logging.level }}
+      encoding: json
+    metrics:
+      level: normal
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: "0.0.0.0"
+                port: 8888
+  pipelines:
+    {{- $prom := or $p.prometheusScrape.enabled (not (empty $p.prometheusScrape.extraScrapeConfigs)) }}
+    {{- $procs := list "memory_limiter" "k8s_attributes" }}
+    {{- if $p.resourceDetection.enabled }}{{ $procs = append $procs "resource_detection" }}{{ end }}
+    {{- $procs = append $procs "resource" }}
+    {{- $logRecv := list }}
+    {{- if $p.logsCollection.enabled }}{{ $logRecv = append $logRecv "file_log" }}{{ end }}
+    {{- if $p.journald.enabled }}{{ $logRecv = append $logRecv "journald" }}{{ end }}
+    {{- if $p.otlp.enabled }}{{ $logRecv = append $logRecv "otlp" }}{{ end }}
+    {{- $metRecv := list }}
+    {{- if $p.kubeletMetrics.enabled }}{{ $metRecv = append $metRecv "kubelet_stats" }}{{ end }}
+    {{- if $p.hostMetrics.enabled }}{{ $metRecv = append $metRecv "host_metrics" }}{{ end }}
+    {{- if $p.otlp.enabled }}{{ $metRecv = append $metRecv "otlp" }}{{ end }}
+    {{- if $prom }}{{ $metRecv = append $metRecv "prometheus" }}{{ end }}
+    {{- if $p.selfMonitoring.enabled }}{{ $metRecv = append $metRecv "prometheus/self" }}{{ end }}
+    {{- if $logRecv }}
+    logs:
+      receivers: [{{ join ", " $logRecv }}]
+      processors: [{{ join ", " $procs }}]
+      exporters: [otlp_grpc]
+    {{- end }}
+    {{- if $metRecv }}
+    metrics:
+      receivers: [{{ join ", " $metRecv }}]
+      processors: [{{ if $prom }}transform/prometheus_resource, {{ end }}{{ join ", " $procs }}]
+      exporters: [otlp_grpc]
+    {{- end }}
+    {{- if $p.otlp.enabled }}
+    traces:
+      receivers: [otlp]
+      processors: [{{ join ", " $procs }}]
+      exporters: [otlp_grpc]
+    {{- end }}
+{{- end }}
+
+{{- if include "dogc.agent.enabled" . | eq "true" }}
+{{- $raw := include "dogc.agent.config" . }}
+{{- $cfg := $raw | fromYaml }}
+{{- if hasKey $cfg "Error" }}{{ fail (printf "agent config template did not render valid YAML: %s" (get $cfg "Error")) }}{{ end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dogc.agent.fullname" . }}-config
+  labels:
+    {{- include "dogc.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent
+data:
+  config.yaml: |
+    # OpenTelemetry agent (DaemonSet) - generated by the dog-k8s-collector chart
+    {{- if .Values.agent.extraConfig }}
+    {{- mergeOverwrite $cfg .Values.agent.extraConfig | toYaml | nindent 4 }}
+    {{- else }}
+    {{- $raw | nindent 4 }}
+    {{- end }}
+{{- end }}

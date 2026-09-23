@@ -1,107 +1,37 @@
-🔭 AIObserve Stack
+AIObserve Stack {{ .Chart.Version }} installed as release {{ .Release.Name }} in namespace {{ .Release.Namespace }}.
 
-Thank you for installing {{ .Chart.Name }}!
-
-=============================================================================
-DEPLOYMENT SUMMARY
-=============================================================================
-
-{{- if eq .Values.doris.mode "internal" }}
-📦 Doris Mode: INTERNAL (managed by AIObserve Stack)
-   - DorisCluster: {{ include "aiobs.doris.clusterName" . }}
-   - FE Replicas: {{ .Values.doris.internal.cluster.fe.replicas }}
-   - BE Replicas: {{ .Values.doris.internal.cluster.be.replicas }}
-{{- else }}
-📦 Doris Mode: EXTERNAL
-   - Host: {{ .Values.doris.external.host }}
-   - Port: {{ .Values.doris.external.port }}
+{{- if .Values.gateway.enabled }}
+  gateway (StatefulSet) {{ include "aiobs.gateway.fullname" . }} x{{ .Values.gateway.replicas }}
+    OTLP gRPC {{ include "aiobs.gateway.otlpGrpcEndpoint" . }}
+    OTLP HTTP {{ include "aiobs.gateway.otlpHttpEndpoint" . }}
 {{- end }}
-
-{{- if .Values.otel.enabled }}
-📡 OpenTelemetry Collector: ENABLED
-   - OTLP gRPC: {{ .Values.otel.ports.otlpGrpc }}
-   - OTLP HTTP: {{ .Values.otel.ports.otlpHttp }}
-   - Metrics: {{ .Values.otel.ports.metrics }}
-{{- else }}
-📡 OpenTelemetry Collector: DISABLED
-{{- end }}
-
+  Doris: {{ .Values.doris.mode }} {{ include "aiobs.doris.mysqlEndpoint" . }} database {{ include "aiobs.doris.database" . }}
 {{- if .Values.grafana.enabled }}
-📊 Grafana: ENABLED
-   - Service: {{ include "aiobs.grafana.fullname" . }}
-   - Port: {{ .Values.grafana.service.port }}
-{{- else }}
-📊 Grafana: DISABLED
+  Grafana: kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "aiobs.grafana.fullname" . }} 3000:{{ .Values.grafana.service.port }}
+    user {{ .Values.grafana.adminUser }}, password in Secret {{ include "aiobs.grafana.secretName" . }} (key admin-password)
 {{- end }}
 
-=============================================================================
-ACCESS INSTRUCTIONS
-=============================================================================
-
-{{- if .Values.grafana.enabled }}
-1. Access Grafana:
-
-   # Port forward to Grafana
-   kubectl port-forward svc/{{ include "aiobs.grafana.fullname" . }} 3000:{{ .Values.grafana.service.port }} -n {{ .Release.Namespace }}
-
-   # Open in browser
-   http://localhost:3000
-
-   # Login credentials
-   Username: {{ .Values.grafana.adminUser }}
-   Password: {{ .Values.grafana.adminPassword }}
+Verify
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- if .Values.gateway.enabled }}
+  helm test {{ .Release.Name }} -n {{ .Release.Namespace }} --logs      # sends a log record through the gateway and checks Doris
 {{- end }}
 
-{{- if .Values.otel.enabled }}
+Send data
+  Anything that speaks OTLP can send to the gateway address above.
+  To collect this Kubernetes cluster (container logs, kubelet / node / cluster metrics, Events),
+  install the dog-k8s-collector chart pointed at it:
+    helm install dog-k8s-collector ai-observe-stack/dog-k8s-collector -n {{ .Release.Namespace }} \
+      --set gateway.endpoint={{ include "aiobs.gateway.otlpGrpcEndpoint" . }} --set clusterName=<your cluster name>
+  (guide: helm-charts/GETTING_STARTED.md; examples: helm-charts/examples/dog-k8s-collector/)
 
-2. Send telemetry data to OTel Collector:
-
-   # From within the cluster
-   OTLP gRPC: {{ include "aiobs.otel.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.otel.ports.otlpGrpc }}
-   OTLP HTTP: {{ include "aiobs.otel.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.otel.ports.otlpHttp }}
-
-   # Port forward for local testing
-   kubectl port-forward svc/{{ include "aiobs.otel.fullname" . }} 4317:{{ .Values.otel.ports.otlpGrpc }} 4318:{{ .Values.otel.ports.otlpHttp }} -n {{ .Release.Namespace }}
+If nothing shows up
+{{- if .Values.gateway.enabled }}
+  kubectl logs -n {{ .Release.Namespace }} {{ include "aiobs.gateway.fullname" . }}-0 | grep -i 'doris\|error'
+  - external Doris: the user needs CREATE DATABASE (or pre-create the schema and set gateway.dorisExporter.createSchema=false)
+{{- end }}
+{{- if and (eq .Values.doris.mode "internal") .Values.doris.internal.operator.enabled }}
+  - the Doris Operator is cluster-wide: a second release in this cluster must set doris.internal.operator.enabled=false
 {{- end }}
 
-{{- if eq .Values.doris.mode "internal" }}
-
-3. Access Doris:
-
-   # Port forward to Doris FE (MySQL protocol)
-   kubectl port-forward svc/{{ include "aiobs.doris.clusterName" . }}-fe 9030:9030 -n {{ .Release.Namespace }}
-
-   # Connect via MySQL client
-   mysql -h 127.0.0.1 -P 9030 -u root
-
-   # Port forward to Doris FE Web UI
-   kubectl port-forward svc/{{ include "aiobs.doris.clusterName" . }}-fe 8030:8030 -n {{ .Release.Namespace }}
-   # Open http://localhost:8030
-{{- end }}
-
-=============================================================================
-VERIFY INSTALLATION
-=============================================================================
-
-# Check all pods are running
-kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
-
-# Check services
-kubectl get svc -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
-
-{{- if eq .Values.doris.mode "internal" }}
-# Check DorisCluster status
-kubectl get doriscluster -n {{ .Release.Namespace }}
-{{- end }}
-
-=============================================================================
-DOCUMENTATION
-=============================================================================
-
-For more information, visit:
-- AIObserve Stack: https://github.com/ai-observe/ai-observe-stack
-- Apache Doris: https://doris.apache.org
-- OpenTelemetry: https://opentelemetry.io
-- Grafana: https://grafana.com
-
-Happy Observing! 🔭
+Docs: USER_GUIDE.md (start here), README.md, UPGRADING.md
