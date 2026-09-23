@@ -21,6 +21,8 @@ services:
     image: otel/opentelemetry-collector-contrib:0.144.0
     hostname: otel-collector
     container_name: otel-collector
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # the .env default; Docker Desktop resolves it, Linux needs this
     command: ["--config=/etc/otelcol/otel-collector-config.yaml"]
     volumes:
       - ./otel-collector-config/otel-collector-config-without-doris.yaml:/etc/otelcol/otel-collector-config.yaml:ro
@@ -50,6 +52,8 @@ services:
     image: grafana/grafana:11.4.0
     hostname: grafana
     container_name: grafana
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}

@@ -105,6 +105,8 @@ Then start the services:
 docker compose -f docker-compose-without-doris.yaml up -d
 ```
 
+The collector writes through Stream Load: FE redirects each request to a BE at the address the BE registered in Doris (`SHOW BACKENDS`), so those addresses and the BE HTTP port (8040 by default) must be reachable from the collector container, not only the FE. An all-in-one Doris whose BE registered as `127.0.0.1` does not work as an external Doris.
+
 If you don't have a Doris cluster, start the full stack with the built-in Doris using the default configuration:
 
 ```bash

@@ -105,6 +105,8 @@ DORIS_PASSWORD=
 docker compose -f docker-compose-without-doris.yaml up -d
 ```
 
+Collector 通过 Stream Load 写入：FE 会把每个请求重定向到 BE 在 Doris 中注册的地址（`SHOW BACKENDS`），因此 collector 容器不仅要能访问 FE，还要能访问这些 BE 地址及 BE 的 HTTP 端口（默认 8040）。BE 注册为 `127.0.0.1` 的一体化 Doris 不能作为外部 Doris 使用。
+
 如果没有 Doris 集群，直接使用默认配置启动完整技术栈（包含内置 Doris）：
 
 ```bash

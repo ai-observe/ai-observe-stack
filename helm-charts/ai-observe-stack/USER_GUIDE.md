@@ -54,7 +54,7 @@ doris:
 ```bash
 git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/helm-charts
-helm dependency build ./ai-observe-stack   # fetches the Doris Operator subchart; required in every Doris mode
+helm dependency update ./ai-observe-stack  # fetches the Doris Operator subchart; required in every Doris mode
 helm upgrade --install dog ./ai-observe-stack -n dog --create-namespace -f my-values.yaml
 ```
 
@@ -226,7 +226,8 @@ helm rollback dog 3 -n dog
 
 ```bash
 helm uninstall dog -n dog
-kubectl delete pvc -n dog -l app.kubernetes.io/instance=dog   # gateway queues; in internal mode also the Doris volumes
+kubectl delete pvc -n dog -l app.kubernetes.io/instance=dog   # gateway queues
+kubectl delete pvc -n dog -l 'app.doris.ownerreference/name in (dog-ai-observe-stack-doris-fe,dog-ai-observe-stack-doris-be)'   # Doris volumes (internal mode; created by the operator, without the release label)
 ```
 
 Data in Doris is unaffected by an uninstall. The Kubernetes collector is a separate release: `helm uninstall dog-k8s-collector -n dog`.

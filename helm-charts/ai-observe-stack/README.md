@@ -46,7 +46,7 @@ credentials and a persisted queue. Collecting a Kubernetes cluster is the separa
 ```bash
 git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/helm-charts
-helm dependency build ./ai-observe-stack   # fetches the Doris Operator subchart; required in every Doris mode
+helm dependency update ./ai-observe-stack  # fetches the Doris Operator subchart; required in every Doris mode
 ```
 
 **With Doris deployed by the chart** (the Doris Operator is a dependency):
@@ -165,7 +165,8 @@ size, dropped and refused counts of the gateway and of every dog-k8s-collector p
 ```bash
 helm upgrade <release> ./ai-observe-stack -n <ns> -f my-values.yaml
 helm uninstall <release> -n <ns>
-kubectl delete pvc -n <ns> -l app.kubernetes.io/instance=<release>      # gateway queues (and Doris data if internal)
+kubectl delete pvc -n <ns> -l app.kubernetes.io/instance=<release>      # gateway queues
+kubectl delete pvc -n <ns> -l 'app.doris.ownerreference/name in (<release>-ai-observe-stack-doris-fe,<release>-ai-observe-stack-doris-be)'   # Doris data (internal mode)
 ```
 
 See [UPGRADING.md](./UPGRADING.md) for 0.1.x → 0.2.0. The Kubernetes collector is its own release

@@ -39,7 +39,7 @@ Gateway 从不采集。它是唯一和 Doris 说话的组件，持有唯一一�
 ```bash
 git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/helm-charts
-helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；任何 Doris 模式都需要
+helm dependency update ./ai-observe-stack  # 拉取 Doris Operator 子 chart；任何 Doris 模式都需要
 ```
 
 **由 chart 部署 Doris**（依赖 Doris Operator）：
@@ -147,7 +147,8 @@ Grafana 面板：chart 预置 *K8s Observability*、*Logs Explorer*、*Kubernete
 ```bash
 helm upgrade <release> ./ai-observe-stack -n <ns> -f my-values.yaml
 helm uninstall <release> -n <ns>
-kubectl delete pvc -n <ns> -l app.kubernetes.io/instance=<release>      # Gateway 队列（internal 模式下还有 Doris 数据）
+kubectl delete pvc -n <ns> -l app.kubernetes.io/instance=<release>      # Gateway 队列
+kubectl delete pvc -n <ns> -l 'app.doris.ownerreference/name in (<release>-ai-observe-stack-doris-fe,<release>-ai-observe-stack-doris-be)'   # Doris 数据（internal 模式）
 ```
 
 0.1.x → 0.2.0 见 [UPGRADING.md](./UPGRADING.md)。K8s 采集器是独立的 release（`helm uninstall dog-k8s-collector`）。

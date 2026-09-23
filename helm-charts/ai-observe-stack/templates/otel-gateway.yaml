@@ -103,6 +103,8 @@ spec:
             - |
               until nc -z {{ include "aiobs.doris.clusterName" . }}-fe-service 9030; do echo "waiting for Doris FE 9030"; sleep 5; done
               until nc -z {{ include "aiobs.doris.clusterName" . }}-fe-service 8030; do echo "waiting for Doris FE 8030"; sleep 5; done
+              # the exporter creates tables at start-up, which fails until a BE has registered
+              until wget -qO- http://{{ include "aiobs.doris.clusterName" . }}-fe-service:8030/api/health 2>/dev/null | tr -d ' \n' | grep -q '"online_backend_num":[1-9]'; do echo "waiting for a Doris BE to come online"; sleep 5; done
       {{- end }}
       containers:
         - name: otel-gateway

@@ -54,7 +54,7 @@ doris:
 ```bash
 git clone https://github.com/ai-observe/ai-observe-stack.git
 cd ai-observe-stack/helm-charts
-helm dependency build ./ai-observe-stack   # 拉取 Doris Operator 子 chart；任何 Doris 模式都需要
+helm dependency update ./ai-observe-stack  # 拉取 Doris Operator 子 chart；任何 Doris 模式都需要
 helm upgrade --install dog ./ai-observe-stack -n dog --create-namespace -f my-values.yaml
 ```
 
@@ -226,7 +226,8 @@ helm rollback dog 3 -n dog
 
 ```bash
 helm uninstall dog -n dog
-kubectl delete pvc -n dog -l app.kubernetes.io/instance=dog   # Gateway 队列；internal 模式下还有 Doris 的数据盘
+kubectl delete pvc -n dog -l app.kubernetes.io/instance=dog   # Gateway 队列
+kubectl delete pvc -n dog -l 'app.doris.ownerreference/name in (dog-ai-observe-stack-doris-fe,dog-ai-observe-stack-doris-be)'   # Doris 数据盘（internal 模式；由 Operator 创建，不带 release 标签）
 ```
 
 Doris 里的数据不受卸载影响。K8s 采集器是独立的 release：`helm uninstall dog-k8s-collector -n dog`。

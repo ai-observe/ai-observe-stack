@@ -20,7 +20,7 @@ jobs:
         with:
           version: v3.16.0
       - name: Dependencies
-        run: helm dependency build "$CHART"
+        run: helm dependency update "$CHART"
       - name: Lint (defaults and every example)
         run: |
           helm lint "$CHART"
@@ -50,7 +50,7 @@ jobs:
               | yq '.data["config.yaml"]' > "out/$name.gateway.yaml"; echo "extracted $name gateway"
           done
           for f in helm-charts/examples/dog-k8s-collector/*.yaml helm-charts/examples/dog-k8s-collector/litefuse/collector-values.yaml helm-charts/examples/dog-k8s-collector/kubectl/values.yaml; do
-            name=collector-$(basename "$f" .yaml)
+            rel=${f#helm-charts/examples/dog-k8s-collector/}; name=collector-$(echo "${rel%.yaml}" | tr / -)
             for t in agent cluster; do
               helm template dog-k8s-collector "$COLLECTOR" -n dog -f "$f" --show-only templates/configmap-$t.yaml \
                 | yq '.data["config.yaml"]' > "out/$name.$t.yaml"; echo "extracted $name $t"
