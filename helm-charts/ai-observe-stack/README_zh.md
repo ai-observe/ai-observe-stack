@@ -116,6 +116,42 @@ helm install dog-k8s-collector ./dog-k8s-collector -n dog \
 
 `extraConfig` 是逃生舱：可以加或改任何 receiver / processor / exporter，也能改 pipeline。合并用 `mergeOverwrite`，你写的键会替换生成的同名键。
 
+## OTel Gateway Policy
+
+不使用 Helm 的部署可参考 [OTel Gateway Policy 手动配置](../OTEL_GATEWAY_POLICY_MANUAL_CONFIG_zh.md)。
+
+AIObserve Stack 会在 OTel Gateway 写入 Doris 前执行集中式遥测治理。业务服务继续使用各语言的 OpenTelemetry SDK 或自动探针通过 OTLP 上报，无需因为规则变更而逐个发版。
+
+默认启用脱敏策略：Gateway 会删除 resource、span 和 log attributes 中的 `authorization`、`cookie`、`set-cookie`、`password`、`token`、`secret`、`api_key` 等字段；span 还会删除 `db.statement`。对于字符串类型的日志正文，Bearer Token、密码键值和 API Key/Token/Secret 键值会替换成 `[REDACTED]`。JSON 或二进制正文不会被解析。
+
+可通过自定义 values 覆盖默认规则，并用 OTTL 条件过滤噪声数据：
+
+```yaml
+gateway:
+  policies:
+    redaction:
+      spanAttributeKeys:
+        - authorization
+        - db.statement
+        - enduser.id
+      logBodyPatterns:
+        - '(?i)session[_-]?id\s*[:=]\s*[^,\s&;]+'
+    filter:
+      enabled: true
+      traces:
+        - 'name == "GET /healthz"'
+      metrics:
+        - 'name == "http.server.request.duration" and resource.attributes["service.name"] == "health-check"'
+      logs:
+        - 'resource.attributes["service.name"] == "health-check" and severity_number < SEVERITY_NUMBER_WARN'
+```
+
+规则被渲染为 Collector 的 `transform` 和 `filter` processors，顺序固定为 `memory_limiter → transform → redaction → filter → doris（发送队列内批处理）`。非法 OTTL 表达式会导致 Collector 启动失败，避免规则被静默忽略。变更 `gateway.policies` 会改变 Collector ConfigMap checksum，并触发 Gateway StatefulSet 的滚动更新。
+
+建议使用 Kubernetes `NetworkPolicy` 或出口控制，只允许工作负载访问本 Chart 部署的 OTLP Gateway；否则服务仍可能绕过集中策略直接把遥测发送到其他后端。Gateway 是最后一道统一保护层，业务代码仍不应主动记录密码、密钥或完整个人数据。
+
+---
+
 ## 示例
 
 | 文件 | 场景 |

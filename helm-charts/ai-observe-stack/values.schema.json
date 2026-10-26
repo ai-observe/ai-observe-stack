@@ -75,6 +75,7 @@
             "sendingQueue": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "numConsumers": {"type": "integer"}, "queueSize": {"type": "integer"}, "batch": {"type": "object", "properties": {"flushTimeout": {"type": "string"}, "minSize": {"type": "integer"}, "maxSize": {"type": "integer"}}}}}
           }
         },
+        "policies": {"type": "object", "additionalProperties": false, "properties": {"redaction": {"type": "object", "additionalProperties": false, "properties": {"enabled": {"type": "boolean"}, "resourceAttributeKeys": {"type": "array", "items": {"type": "string"}}, "spanAttributeKeys": {"type": "array", "items": {"type": "string"}}, "logAttributeKeys": {"type": "array", "items": {"type": "string"}}, "logBodyPatterns": {"type": "array", "items": {"type": "string"}}}}, "filter": {"type": "object", "additionalProperties": false, "properties": {"enabled": {"type": "boolean"}, "traces": {"type": "array", "items": {"type": "string"}}, "metrics": {"type": "array", "items": {"type": "string"}}, "logs": {"type": "array", "items": {"type": "string"}}}}}},
         "serviceName": {"type": "object"},
         "timeGuard": {"type": "object", "properties": {"enabled": {"type": "boolean"}, "maxPastSeconds": {"type": ["integer", "null"]}, "maxFutureSeconds": {"type": "integer"}}},
         "debug": {"type": "object"},

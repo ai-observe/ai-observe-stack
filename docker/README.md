@@ -217,6 +217,16 @@ receivers:
 - Dashboard config: `grafana/provisioning/dashboards/dashboards.yaml`
 - Dashboard JSON files: `grafana/dashboards/`
 
+The bundled Doris App is version **1.1.21**, installed from the supplied local package
+`/Users/jeffrey/Documents/velodb/grafana-doris-app/release/velodb-doris-app-1.1.21.zip`
+(SHA-256: `5e6da8f0d7af7600b66053d9f3134659a5c040a7e684a3f973ed4f7a2c803508`).
+The extracted files are included in `grafana/plugins/velodb-doris-app/`; the original
+ZIP is not required to run the stack. Both Compose configurations mount this directory
+and allow the unsigned `velodb-doris-app` and bundled `velodb-doris-datasource` plugins.
+The package includes backend executables for Linux amd64/arm64 and macOS arm64;
+preserve their executable permissions when copying the plugin. Existing MySQL
+datasource provisioning is retained.
+
 ## Data Schema
 
 AIObserve Stack automatically creates three main tables in Doris:

@@ -17,3 +17,4 @@ helm install dog-k8s-collector ./dog-k8s-collector -n dog -f examples/dog-k8s-co
 - [`examples/ai-observe-stack/`](./examples/ai-observe-stack/) — values for the DOG Stack: minimal with an existing Doris, laptop, production.
 - [`examples/dog-k8s-collector/`](./examples/dog-k8s-collector/) — values for the collector, the litefuse reference deployment with sample log lines, and a plain `kubectl` manifest ([`kubectl/`](./examples/dog-k8s-collector/kubectl/)) for clusters without Helm. Not part of the packaged charts.
 - [`hack/test-rule.sh`](./hack/test-rule.sh) — try your `logs.rules` against a sample log file locally, in seconds, with the real collector image (needs helm, yq, docker).
+- [OTel Gateway Policy 手动配置](./OTEL_GATEWAY_POLICY_MANUAL_CONFIG_zh.md) — configure redaction and noise filtering without Helm; Helm users configure `gateway.policies` in the DOG Stack chart.

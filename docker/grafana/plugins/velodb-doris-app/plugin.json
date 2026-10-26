@@ -3,7 +3,7 @@
     "type": "app",
     "name": "Doris App",
     "id": "velodb-doris-app",
-    "backend": false,
+    "backend": true,
     "info": {
         "keywords": [
             "app"
@@ -22,8 +22,8 @@
                 "path": "img/doris-app.png"
             }
         ],
-        "version": "1.0.5",
-        "updated": "2026-03-12"
+        "version": "1.1.21",
+        "updated": "2026-10-26"
     },
     "includes": [
         {
@@ -60,5 +60,6 @@
         "grafanaDependency": ">=10.4.0",
         "plugins": []
     },
+    "executable": "velodb-doris-app",
     "buildMode": "production"
 }

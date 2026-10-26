@@ -16,11 +16,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-const Discover = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(608), __webpack_require__.e(321), __webpack_require__.e(131), __webpack_require__.e(51), __webpack_require__.e(285)]).then(__webpack_require__.bind(__webpack_require__, 9285)));
-const PageTrace = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(377), __webpack_require__.e(608), __webpack_require__.e(131), __webpack_require__.e(51), __webpack_require__.e(600)]).then(__webpack_require__.bind(__webpack_require__, 2600)));
+const Discover = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(318), __webpack_require__.e(637), __webpack_require__.e(851), __webpack_require__.e(749), __webpack_require__.e(100), __webpack_require__.e(421)]).then(__webpack_require__.bind(__webpack_require__, 1421)));
+const PageTrace = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>Promise.all(/* import() */[__webpack_require__.e(318), __webpack_require__.e(637), __webpack_require__.e(749), __webpack_require__.e(100), __webpack_require__.e(260)]).then(__webpack_require__.bind(__webpack_require__, 8260)));
 const PageDashboard = /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().lazy(()=>__webpack_require__.e(/* import() */ 606).then(__webpack_require__.bind(__webpack_require__, 4606)));
 function App(_props) {
-    return /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Routes, null, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
+    return /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement((react__WEBPACK_IMPORTED_MODULE_0___default().Suspense), {
+        fallback: null
+    }, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Routes, null, /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
         path: _constants__WEBPACK_IMPORTED_MODULE_2__/* .ROUTES */ .bw.Discover,
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Discover, null)
     }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
@@ -32,7 +34,7 @@ function App(_props) {
     }), /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__.Route, {
         path: "*",
         element: /*#__PURE__*/ react__WEBPACK_IMPORTED_MODULE_0___default().createElement(Discover, null)
-    }));
+    })));
 }
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (App);
 
@@ -49,22 +51,25 @@ __webpack_require__.d(__webpack_exports__, {
   aR: () => (/* binding */ DEFAULT_SERVICE),
   fU: () => (/* binding */ FORMAT_DATE),
   Bg: () => (/* binding */ IntervalEnum),
+  Gy: () => (/* binding */ PLUGIN_BASE_URL),
   bw: () => (/* binding */ ROUTES),
   Vy: () => (/* binding */ getAutoInterval),
   VA: () => (/* binding */ translationDateIntervalType)
 });
 
-// UNUSED EXPORTS: AUTO_INTERVALS, CAN_SEARCH_FIELD_TYPE, ENABLE_SEARCH_FIELD_TYPE, PLUGIN_BASE_URL
+// UNUSED EXPORTS: AUTO_INTERVALS, CAN_SEARCH_FIELD_TYPE, ENABLE_SEARCH_FIELD_TYPE
 
+// EXTERNAL MODULE: ./i18n/index.ts
+var i18n = __webpack_require__(2149);
 ;// ./plugin.json
-const plugin_namespaceObject = {};
+const plugin_namespaceObject = /*#__PURE__*/JSON.parse('{"id":"velodb-doris-app"}');
 // EXTERNAL MODULE: ../node_modules/lodash-es/groupBy.js + 4 modules
 var groupBy = __webpack_require__(35);
 ;// ./constants.ts
-/* unused harmony import specifier */ var pluginJson;
 
 
-const PLUGIN_BASE_URL = (/* unused pure expression or super */ null && (`/a/${pluginJson.id}`));
+
+const PLUGIN_BASE_URL = `/a/${plugin_namespaceObject.id}`;
 var ROUTES = /*#__PURE__*/ function(ROUTES) {
     ROUTES["One"] = "one";
     ROUTES["Discover"] = "discover";
@@ -86,11 +91,15 @@ var IntervalEnum = /*#__PURE__*/ function(IntervalEnum) {
 }({});
 const DEFAULT_SERVICE = {
     value: 'all',
-    label: 'ALL'
+    get label () {
+        return (0,i18n.t)('All');
+    }
 };
 const DEFAULT_OPERATION = {
     value: 'all',
-    label: 'ALL'
+    get label () {
+        return (0,i18n.t)('All');
+    }
 };
 const AUTO_INTERVALS = [
     {
@@ -291,25 +300,25 @@ function getAutoInterval(currentDate) {
 }
 function translationDateIntervalType(type) {
     if (type === 'auto') {
-        return 'Auto';
+        return (0,i18n.t)('Auto');
     } else if (type === 'second') {
-        return 'Second';
+        return (0,i18n.t)('Second');
     } else if (type === 'minute') {
-        return 'Minute';
+        return (0,i18n.t)('Minute');
     } else if (type === 'hour') {
-        return 'Hour';
+        return (0,i18n.t)('Hour');
     } else if (type === 'day') {
-        return 'Day';
+        return (0,i18n.t)('Day');
     } else if (type === 'week') {
-        return 'Week';
+        return (0,i18n.t)('Week');
     } else if (type === 'month') {
-        return 'Month';
+        return (0,i18n.t)('Month');
     }
-    return 'Year';
+    return (0,i18n.t)('Year');
 }
 
 
 /***/ }
 
 }]);
-//# sourceMappingURL=462.js.map?_cache=30a4da35981c970a4eee
+//# sourceMappingURL=462.js.map?_cache=c3d0efe5a446bafbd94f

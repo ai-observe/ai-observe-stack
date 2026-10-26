@@ -3,5 +3,5 @@
 * text=auto
 
 gradlew text eol=lf
-src/grafana/plugins/doris-app/*.js -text
-src/grafana/plugins/doris-app/*.map -text
+# Preserve the packaged plugin files byte-for-byte.
+src/grafana/plugins/velodb-doris-app/** -text

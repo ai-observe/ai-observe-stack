@@ -1,0 +1,31 @@
+doris:
+  mode: external
+  internal:
+    operator:
+      enabled: false
+  external:
+    host: doris.example.com
+
+gateway:
+  persistence:
+    enabled: false
+  selfMonitoring:
+    enabled: false
+  debug:
+    enabled: false
+  policies:
+    redaction:
+      enabled: true
+      resourceAttributeKeys: [tenant.secret]
+      spanAttributeKeys: [http.request.header.authorization]
+      logAttributeKeys: [user.password]
+      logBodyPatterns:
+        - '(?i)credential\s*[:=]\s*\S+'
+    filter:
+      enabled: true
+      traces:
+        - 'name == "GET /healthz"'
+      metrics:
+        - 'name == "healthcheck.duration"'
+      logs:
+        - 'resource.attributes["service.name"] == "health-check"'

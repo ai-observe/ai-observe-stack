@@ -5,6 +5,8 @@ belong to the Doris side, writes Doris. Never collects.
 */}}
 {{- define "aiobs.gateway.config" -}}
 {{- $g := .Values.gateway -}}
+{{- $redactionEnabled := $g.policies.redaction.enabled -}}
+{{- $filterEnabled := and $g.policies.filter.enabled (or $g.policies.filter.traces $g.policies.filter.metrics $g.policies.filter.logs) -}}
 {{- /* past window defaults to the partition window the exporter guarantees: createHistoryDays * 1 day, minus a margin */ -}}
 {{- $maxPast := $g.timeGuard.maxPastSeconds | default (sub (mul (int $g.dorisExporter.createHistoryDays) 86400) 600) -}}
 receivers:
@@ -86,6 +88,74 @@ processors:
           {{- include "aiobs.gateway.serviceNameStatements" . | trim | nindent 10 }}
       {{- end }}
     {{- end }}
+
+  {{- if $redactionEnabled }}
+  # Redact sensitive values before telemetry is exported outside the gateway.
+  # error_mode: propagate makes malformed statements fail the Collector instead
+  # of silently allowing ungoverned telemetry through.
+  transform/redaction:
+    error_mode: propagate
+    trace_statements:
+      - context: resource
+        statements:
+          {{- range $g.policies.redaction.resourceAttributeKeys }}
+          - delete_key(resource.attributes, {{ . | quote }})
+          {{- end }}
+      - context: span
+        statements:
+          {{- range $g.policies.redaction.spanAttributeKeys }}
+          - delete_key(span.attributes, {{ . | quote }})
+          {{- end }}
+    metric_statements:
+      - context: resource
+        statements:
+          {{- range $g.policies.redaction.resourceAttributeKeys }}
+          - delete_key(resource.attributes, {{ . | quote }})
+          {{- end }}
+    log_statements:
+      - context: resource
+        statements:
+          {{- range $g.policies.redaction.resourceAttributeKeys }}
+          - delete_key(resource.attributes, {{ . | quote }})
+          {{- end }}
+      - context: log
+        statements:
+          {{- range $g.policies.redaction.logAttributeKeys }}
+          - delete_key(log.attributes, {{ . | quote }})
+          {{- end }}
+          {{- range $g.policies.redaction.logBodyPatterns }}
+          - replace_pattern(log.body, {{ . | quote }}, "[REDACTED]") where IsString(log.body)
+          {{- end }}
+  {{- end }}
+
+  {{- if $filterEnabled }}
+  # Drop telemetry that matches configured OTTL noise filters.
+  # Collector startup fails when an expression is malformed.
+  filter/noise:
+    error_mode: propagate
+    {{- if $g.policies.filter.traces }}
+    traces:
+      span:
+        {{- range $g.policies.filter.traces }}
+        - {{ . | quote }}
+        {{- end }}
+    {{- end }}
+    {{- if $g.policies.filter.metrics }}
+    metrics:
+      metric:
+        {{- range $g.policies.filter.metrics }}
+        - {{ . | quote }}
+        {{- end }}
+    {{- end }}
+    {{- if $g.policies.filter.logs }}
+    logs:
+      log_record:
+        {{- range $g.policies.filter.logs }}
+        - {{ . | quote }}
+        {{- end }}
+    {{- end }}
+  {{- end }}
+
 
 exporters:
   doris:
@@ -172,15 +242,15 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, transform]
+      processors: [memory_limiter, transform{{ if $redactionEnabled }}, transform/redaction{{ end }}{{ if $filterEnabled }}, filter/noise{{ end }}]
       exporters: [doris{{ if $g.debug.enabled }}, debug{{ end }}]
     metrics:
       receivers: [otlp{{ if $g.selfMonitoring.enabled }}, prometheus/self{{ end }}]
-      processors: [memory_limiter, transform]
+      processors: [memory_limiter, transform{{ if $redactionEnabled }}, transform/redaction{{ end }}{{ if $filterEnabled }}, filter/noise{{ end }}]
       exporters: [doris{{ if $g.debug.enabled }}, debug{{ end }}]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, transform]
+      processors: [memory_limiter, transform{{ if $redactionEnabled }}, transform/redaction{{ end }}{{ if $filterEnabled }}, filter/noise{{ end }}]
       exporters: [doris{{ if $g.debug.enabled }}, debug{{ end }}]
 {{- end }}
 

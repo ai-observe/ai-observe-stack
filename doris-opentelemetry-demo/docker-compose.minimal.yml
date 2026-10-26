@@ -586,6 +586,7 @@ services:
     volumes:
       - ./src/grafana/grafana.ini:/etc/grafana/grafana.ini
       - ./src/grafana/provisioning/:/etc/grafana/provisioning/
+      - ./src/grafana/plugins/velodb-doris-app:/var/lib/grafana/plugins/velodb-doris-app:ro
     ports:
       - "${GRAFANA_PORT}"
     logging: *logging

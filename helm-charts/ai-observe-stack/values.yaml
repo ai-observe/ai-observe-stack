@@ -135,6 +135,53 @@ gateway:
   memoryLimiter:
     limitPercentage: 75
     spikeLimitPercentage: 20
+  # Centralized telemetry policies, enforced by the OTel Gateway before Doris.
+  # Rules are managed with Helm values so that they can be reviewed and rolled
+  # back through the same GitOps workflow as the rest of the stack.
+  policies:
+    redaction:
+      # Remove sensitive attribute values before they leave the Gateway.
+      enabled: true
+      resourceAttributeKeys:
+        - authorization
+        - cookie
+        - set-cookie
+        - password
+        - token
+        - secret
+        - api_key
+      spanAttributeKeys:
+        - authorization
+        - cookie
+        - set-cookie
+        - password
+        - token
+        - secret
+        - api_key
+        - db.statement
+      logAttributeKeys:
+        - authorization
+        - cookie
+        - set-cookie
+        - password
+        - token
+        - secret
+        - api_key
+      # Patterns are evaluated only when the log body is a string. Every match
+      # is replaced with [REDACTED]; structured or binary log bodies are not parsed.
+      logBodyPatterns:
+        - '(?i)bearer\s+[a-z0-9\-._~+/]+=*'
+        - '(?i)(password|passwd|pwd)\s*[:=]\s*[^,\s&;]+'
+        - '(?i)(api[_-]?key|token|secret)\s*[:=]\s*[^,\s&;]+'
+
+    filter:
+      # Add valid OTTL conditions below to discard high-volume, low-value telemetry.
+      # Invalid OTTL causes the Collector configuration to fail at startup.
+      enabled: false
+      traces: []
+      metrics: []
+      logs: []
+
   dorisExporter:
     tables:
       logs: otel_logs

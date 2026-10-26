@@ -42,6 +42,11 @@ gateway:
       batch: {flushTimeout: 5s, minSize: 8192, maxSize: 16384}
   debug:
     enabled: false
+  policies:
+    redaction:
+      enabled: true
+    filter:
+      enabled: false
 
 # Collecting the cluster itself is the dog-k8s-collector chart: see examples/dog-k8s-collector/.
 

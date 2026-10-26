@@ -217,6 +217,14 @@ receivers:
 - Dashboard 配置: `grafana/provisioning/dashboards/dashboards.yaml`
 - Dashboard JSON 文件: `grafana/dashboards/`
 
+内置 Doris App 版本为 **1.1.21**，来自提供的本地安装包
+`/Users/jeffrey/Documents/velodb/grafana-doris-app/release/velodb-doris-app-1.1.21.zip`
+（SHA-256：`5e6da8f0d7af7600b66053d9f3134659a5c040a7e684a3f973ed4f7a2c803508`）。
+解压后的文件已放入 `grafana/plugins/velodb-doris-app/`，运行项目无需原始 ZIP。
+两套 Compose 配置均挂载该目录，并允许加载未签名的 `velodb-doris-app`
+及其内置数据源子插件 `velodb-doris-datasource`。安装包包含 Linux amd64/arm64
+和 macOS arm64 后端程序，复制插件时需保留执行权限。现有 MySQL 数据源预配置保持不变。
+
 ## 数据 Schema
 
 AIObserve Stack 在 Doris 中自动创建三张主要表：

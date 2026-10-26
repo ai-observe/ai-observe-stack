@@ -2,6 +2,19 @@
 
 本插件目前为开发测试阶段，尚未签名，请勿用于生产环境。
 
+当前内置版本为 **1.1.21**，来自本地安装包
+`/Users/jeffrey/Documents/velodb/grafana-doris-app/release/velodb-doris-app-1.1.21.zip`
+（SHA-256：`5e6da8f0d7af7600b66053d9f3134659a5c040a7e684a3f973ed4f7a2c803508`）。
+解压后的插件位于 `src/grafana/plugins/velodb-doris-app/`，运行演示无需原始 ZIP。
+`docker-compose.minimal.yml` 已添加该目录的只读挂载，`grafana.ini` 允许加载
+`velodb-doris-app` 和内置数据源子插件 `velodb-doris-datasource`。
+后端程序支持 Linux amd64/arm64 和 macOS arm64，复制文件时需保留执行权限。
+
+旧版本的插件 ID `doris-app` 已改为 `velodb-doris-app`，Discover 页面地址为
+`/a/velodb-doris-app/discover`，Traces 页面地址为 `/a/velodb-doris-app/traces`。
+已有书签需更新；旧插件的用户配置不会自动迁移，升级后需手动启用新插件并检查配置。
+现有 MySQL 数据源预配置保持不变。
+
 ## 启用 Doris-App 插件
 
 登录 Grafana，在左侧菜单中点击 `Administration > Plugins and data > Plugins`，进入插件页面，搜索 doris 找到 `Doris` 插件
